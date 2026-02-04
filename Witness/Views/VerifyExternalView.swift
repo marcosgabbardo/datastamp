@@ -1,23 +1,21 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-extension UTType {
-    static var openTimestampsProof: UTType {
-        UTType(importedAs: "org.opentimestamps.ots")
-    }
-}
-
 struct VerifyExternalView: View {
     @Environment(\.dismiss) private var dismiss
     
-    @State private var isImporting = false
+    enum ImportMode {
+        case ots
+        case original
+    }
+    
+    @State private var showingFilePicker = false
+    @State private var importMode: ImportMode = .ots
     @State private var isVerifying = false
     @State private var verificationResult: VerificationDisplayResult?
     @State private var error: String?
     @State private var selectedFileURL: URL?
     @State private var originalFileURL: URL?
-    @State private var hashToVerify: Data?
-    @State private var isImportingOriginal = false
     
     private let otsService = OpenTimestampsService()
     
@@ -48,7 +46,8 @@ struct VerifyExternalView: View {
                             .font(.headline)
                         
                         Button {
-                            isImporting = true
+                            importMode = .ots
+                            showingFilePicker = true
                         } label: {
                             HStack {
                                 Image(systemName: selectedFileURL != nil ? "checkmark.circle.fill" : "doc.badge.plus")
@@ -60,6 +59,7 @@ struct VerifyExternalView: View {
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
+                        .buttonStyle(.plain)
                         
                         if let url = selectedFileURL {
                             Text(url.lastPathComponent)
@@ -79,7 +79,8 @@ struct VerifyExternalView: View {
                             .foregroundStyle(.secondary)
                         
                         Button {
-                            isImportingOriginal = true
+                            importMode = .original
+                            showingFilePicker = true
                         } label: {
                             HStack {
                                 Image(systemName: originalFileURL != nil ? "checkmark.circle.fill" : "doc.badge.plus")
@@ -91,6 +92,7 @@ struct VerifyExternalView: View {
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
+                        .buttonStyle(.plain)
                         
                         if let url = originalFileURL {
                             Text(url.lastPathComponent)
@@ -162,18 +164,11 @@ struct VerifyExternalView: View {
                 }
             }
             .fileImporter(
-                isPresented: $isImporting,
-                allowedContentTypes: [.openTimestampsProof, .data],
+                isPresented: $showingFilePicker,
+                allowedContentTypes: importMode == .ots ? [.data] : [.item],
                 allowsMultipleSelection: false
             ) { result in
-                handleOTSImport(result)
-            }
-            .fileImporter(
-                isPresented: $isImportingOriginal,
-                allowedContentTypes: [.item],
-                allowsMultipleSelection: false
-            ) { result in
-                handleOriginalImport(result)
+                handleImport(result)
             }
         }
     }
@@ -243,26 +238,19 @@ struct VerifyExternalView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
-    private func handleOTSImport(_ result: Result<[URL], Error>) {
+    private func handleImport(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
             if let url = urls.first {
-                // Store the URL - we'll handle security scope when verifying
-                selectedFileURL = url
+                switch importMode {
+                case .ots:
+                    selectedFileURL = url
+                case .original:
+                    originalFileURL = url
+                }
             }
-        case .failure(let error):
-            self.error = error.localizedDescription
-        }
-    }
-    
-    private func handleOriginalImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            if let url = urls.first {
-                originalFileURL = url
-            }
-        case .failure(let error):
-            self.error = error.localizedDescription
+        case .failure(let err):
+            self.error = err.localizedDescription
         }
     }
     
