@@ -51,6 +51,7 @@ final class WitnessItem {
     // MARK: - Calendar Info
     var calendarUrl: String?
     var submittedAt: Date?
+    var confirmedAt: Date?
     
     init(
         contentType: ContentType,

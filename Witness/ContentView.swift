@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var witnessManager = WitnessManager()
     @State private var showingCreateSheet = false
     @State private var showingOnboarding = false
+    @State private var showingSettings = false
     @State private var selectedItem: WitnessItem?
     @State private var selectedFilter: ItemFilter = .all
     
@@ -51,6 +52,14 @@ struct ContentView: View {
             }
             .navigationTitle("Witness")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         ForEach(ItemFilter.allCases, id: \.self) { filter in
@@ -84,6 +93,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingOnboarding) {
                 OnboardingView()
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
             .onAppear {
                 if !hasSeenOnboarding {

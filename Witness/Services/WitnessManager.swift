@@ -193,6 +193,7 @@ final class WitnessManager {
             ) {
                 item.otsData = upgradedOts
                 item.status = .confirmed
+                item.confirmedAt = Date()
                 item.lastUpdated = Date()
                 
                 // Extract block info if possible
@@ -201,6 +202,16 @@ final class WitnessManager {
                 // Save updated proof
                 try await storageService.saveProof(upgradedOts, for: item.id)
                 try context.save()
+                
+                // Send notification
+                let displayTitle = item.displayTitle
+                let itemId = item.id
+                let blockHeight = item.bitcoinBlockHeight
+                await NotificationService.shared.notifyConfirmation(
+                    title: displayTitle,
+                    itemId: itemId,
+                    blockHeight: blockHeight
+                )
             }
         } catch {
             // Don't mark as failed - might just not be ready yet
