@@ -599,17 +599,26 @@ struct ItemDetailView: View {
         isFetchingBlockInfo = true
         defer { isFetchingBlockInfo = false }
         
-        // Re-verify to get block info
+        // First try to upgrade the timestamp to get full proof
+        await manager.upgradeTimestamp(item, context: modelContext)
+        
+        // Then verify to get block info
         do {
             let result = try await manager.verifyTimestamp(item)
             if result.isValid {
                 item.bitcoinBlockHeight = result.blockHeight
                 item.bitcoinBlockTime = result.blockTime
                 item.bitcoinTxId = result.txId
+                item.status = .confirmed
                 try? modelContext.save()
                 HapticManager.shared.success()
+            } else {
+                self.error = NSError(domain: "DataStamp", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verification returned invalid"])
+                showingError = true
             }
         } catch {
+            // Try one more approach - re-upgrade
+            print("Verify failed: \(error)")
             self.error = error
             showingError = true
         }
