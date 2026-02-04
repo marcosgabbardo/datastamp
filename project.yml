@@ -22,9 +22,9 @@ targets:
       - path: Witness
         excludes:
           - "**/.DS_Store"
-          - "**/*.xcassets"
-    resources:
       - path: Witness/Resources/Assets.xcassets
+      - path: Witness/Resources/en.lproj
+      - path: Witness/Resources/pt-BR.lproj
     settings:
       base:
         INFOPLIST_FILE: Witness/Info.plist
