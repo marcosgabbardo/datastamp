@@ -76,6 +76,28 @@ actor StorageService {
         return filename
     }
     
+    /// Save text content as .txt file and return the filename
+    func saveText(_ text: String, for itemId: UUID) async throws -> String {
+        let filename = "\(itemId.uuidString).txt"
+        let url = contentDirectory.appendingPathComponent(filename)
+        
+        // Use UTF-8 encoding for consistent hashing
+        guard let data = text.data(using: .utf8) else {
+            throw StorageError.writeFailed
+        }
+        
+        try data.write(to: url)
+        
+        return filename
+    }
+    
+    /// Load text file
+    func loadText(filename: String) async -> String? {
+        let url = contentDirectory.appendingPathComponent(filename)
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+    
     /// Load content file
     func loadContent(filename: String) async throws -> Data {
         let url = contentDirectory.appendingPathComponent(filename)

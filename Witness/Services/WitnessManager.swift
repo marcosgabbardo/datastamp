@@ -26,16 +26,20 @@ final class WitnessManager {
         context: ModelContext
     ) async throws -> WitnessItem {
         isProcessing = true
-        processingMessage = "Computing hash..."
+        processingMessage = "Saving text..."
         defer { 
             isProcessing = false 
             processingMessage = nil
         }
         
-        // Compute hash
-        guard let hash = await otsService.sha256(string: text) else {
+        // Convert text to UTF-8 data for consistent hashing
+        guard let textData = text.data(using: .utf8) else {
             throw WitnessError.hashingFailed
         }
+        
+        // Compute hash from the file data (not string) for reproducibility
+        processingMessage = "Computing hash..."
+        let hash = await otsService.sha256(data: textData)
         
         // Create item
         let item = WitnessItem(
@@ -46,6 +50,11 @@ final class WitnessManager {
         )
         
         context.insert(item)
+        
+        // Save text as .txt file
+        processingMessage = "Saving file..."
+        let filename = try await storageService.saveText(text, for: item.id)
+        item.contentFileName = filename
         
         // Submit to calendar
         processingMessage = "Submitting to OpenTimestamps..."
@@ -378,12 +387,19 @@ final class WitnessManager {
     func getShareURLs(for item: WitnessItem) async throws -> [URL] {
         // Extract needed values on MainActor before calling actor
         let itemId = item.id
-        let contentFileName = item.contentFileName
+        var contentFileName = item.contentFileName
         let otsData = item.otsData ?? item.pendingOtsData
         
         // Ensure OTS proof is saved to disk (might have been lost on reinstall)
         if let otsData = otsData {
             try await storageService.saveProof(otsData, for: itemId)
+        }
+        
+        // For text items without a file (legacy), create the .txt file now
+        if item.contentType == .text, contentFileName == nil, let text = item.textContent {
+            contentFileName = try await storageService.saveText(text, for: itemId)
+            // Update the item for future shares
+            item.contentFileName = contentFileName
         }
         
         return try await storageService.createShareBundle(
