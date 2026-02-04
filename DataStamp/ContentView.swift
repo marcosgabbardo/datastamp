@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var datestampManager = DataStampManager()
     @State private var showingCreateSheet = false
     @State private var showingBatchSheet = false
+    @State private var showingQuickCamera = false
     @State private var showingOnboarding = false
     @State private var showingSettings = false
     @State private var showingVerify = false
@@ -116,6 +117,11 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingBatchSheet) {
                 BatchTimestampView(manager: datestampManager)
+            }
+            .fullScreenCover(isPresented: $showingQuickCamera) {
+                QuickCameraView(manager: datestampManager) { success in
+                    // Camera dismissed
+                }
             }
             .sheet(item: $selectedItem) { item in
                 ItemDetailView(item: item, manager: datestampManager)
@@ -331,27 +337,52 @@ struct ContentView: View {
     }
     
     private var createButton: some View {
-        Menu {
+        HStack(spacing: 12) {
+            // Quick Camera button
             Button {
-                showingCreateSheet = true
+                showingQuickCamera = true
             } label: {
-                Label("Single Timestamp", systemImage: "plus")
+                Image(systemName: "camera.fill")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(width: 48, height: 48)
+                    .background(Color.orange)
+                    .clipShape(Circle())
+                    .shadow(radius: 4, y: 2)
             }
             
-            Button {
-                showingBatchSheet = true
+            // Main create menu
+            Menu {
+                Button {
+                    showingCreateSheet = true
+                } label: {
+                    Label("Single Timestamp", systemImage: "plus")
+                }
+                
+                Button {
+                    showingBatchSheet = true
+                } label: {
+                    Label("Batch Timestamp", systemImage: "square.stack.3d.up")
+                }
+                
+                Divider()
+                
+                Button {
+                    showingQuickCamera = true
+                } label: {
+                    Label("Quick Camera", systemImage: "camera.fill")
+                }
             } label: {
-                Label("Batch Timestamp", systemImage: "square.stack.3d.up")
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+                    .shadow(radius: 4, y: 2)
             }
-        } label: {
-            Image(systemName: "plus")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
-                .background(Color.accentColor)
-                .clipShape(Circle())
-                .shadow(radius: 4, y: 2)
         }
     }
     
