@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import UIKit
+import CryptoKit
 
 /// Main coordinator for Witness operations
 @MainActor
@@ -276,6 +277,80 @@ final class WitnessManager {
         }
     }
     
+    /// Debug: Get upgrade info for an item
+    func getUpgradeDebugInfo(for item: WitnessItem) async -> String {
+        guard let pendingOts = item.pendingOtsData else {
+            return "No pending OTS data"
+        }
+        
+        var info = "=== UPGRADE DEBUG ===\n"
+        info += "Original hash: \(item.hashHex)\n"
+        info += "Calendar: \(item.calendarUrl ?? "none")\n"
+        info += "OTS data size: \(pendingOts.count) bytes\n\n"
+        
+        do {
+            let merkleVerifier = MerkleVerifier()
+            let proof = try await merkleVerifier.parseOtsFile(pendingOts)
+            
+            info += "Operations: \(proof.operations.count)\n"
+            
+            // Compute commitment
+            var commitment = item.contentHash
+            for (i, op) in proof.operations.enumerated() {
+                let before = commitment.hexString
+                commitment = applyOp(op, to: commitment)
+                info += "\(i+1). \(opName(op)): \(before.prefix(16))... -> \(commitment.hexString.prefix(16))...\n"
+            }
+            
+            info += "\nFinal commitment: \(commitment.hexString)\n"
+            
+            // Show attestations
+            info += "\nAttestations:\n"
+            for att in proof.attestations {
+                switch att {
+                case .pending(let url):
+                    info += "- PENDING: \(url)\n"
+                    
+                    // Try to fetch from calendar
+                    let fullUrl = "\(url)/timestamp/\(commitment.hexString)"
+                    info += "  URL: \(fullUrl)\n"
+                    
+                case .bitcoin(let height):
+                    info += "- BITCOIN: block \(height)\n"
+                default:
+                    info += "- OTHER\n"
+                }
+            }
+            
+        } catch {
+            info += "Parse error: \(error)\n"
+        }
+        
+        return info
+    }
+    
+    private func applyOp(_ op: OTSOperation, to data: Data) -> Data {
+        switch op {
+        case .sha256:
+            return Data(SHA256.hash(data: data))
+        case .append(let appendData):
+            return data + appendData
+        case .prepend(let prependData):
+            return prependData + data
+        default:
+            return data
+        }
+    }
+    
+    private func opName(_ op: OTSOperation) -> String {
+        switch op {
+        case .sha256: return "SHA256"
+        case .append(let d): return "Append(\(d.count))"
+        case .prepend(let d): return "Prepend(\(d.count))"
+        default: return "Other"
+        }
+    }
+    
     /// Verify an item's timestamp
     func verifyTimestamp(_ item: WitnessItem) async throws -> VerificationResult {
         guard let otsData = item.otsData ?? item.pendingOtsData else {
@@ -347,6 +422,40 @@ final class WitnessManager {
         urls.insert(pdfUrl, at: 0) // PDF first
         
         return urls
+    }
+    
+    /// Get all share URLs (PDF + original file + .ots)
+    func getShareURLsAll(for item: WitnessItem) async throws -> [URL] {
+        var urls: [URL] = []
+        
+        // Add PDF certificate
+        let pdfUrl = try await generatePDFCertificate(for: item)
+        urls.append(pdfUrl)
+        
+        // Add original file + .ots
+        let proofUrls = try await getShareURLs(for: item)
+        urls.append(contentsOf: proofUrls)
+        
+        return urls
+    }
+    
+    /// Get only .ots file URL
+    func getShareURLsOtsOnly(for item: WitnessItem) async throws -> [URL] {
+        let itemId = item.id
+        let otsData = item.otsData ?? item.pendingOtsData
+        
+        // Ensure OTS proof is saved to disk
+        if let otsData = otsData {
+            try await storageService.saveProof(otsData, for: itemId)
+        }
+        
+        let proofUrl = await storageService.proofFileURL(for: itemId)
+        
+        guard FileManager.default.fileExists(atPath: proofUrl.path) else {
+            throw WitnessError.noProofData
+        }
+        
+        return [proofUrl]
     }
     
     /// Load thumbnail for an item

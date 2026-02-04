@@ -21,6 +21,8 @@ struct ItemDetailView: View {
     @State private var showingError = false
     @State private var merkleTreeData: MerkleTreeData?
     @State private var showingImportProof = false
+    @State private var debugInfo: String?
+    @State private var showingDebugInfo = false
     
     private let merkleVerifier = MerkleVerifier()
     private let otsService = OpenTimestampsService()
@@ -93,11 +95,17 @@ struct ItemDetailView: View {
                 Text("This will permanently delete the timestamp and its proof.")
             }
             .confirmationDialog("Share Options", isPresented: $showingShareOptions, titleVisibility: .visible) {
+                Button("Share All (PDF + File + .ots)") {
+                    Task { await shareAll() }
+                }
                 Button("Share with PDF Certificate") {
                     Task { await shareWithCertificate() }
                 }
-                Button("Share Proof Files Only") {
+                Button("Share Original File + .ots") {
                     Task { await share() }
+                }
+                Button("Share .ots Only") {
+                    Task { await shareOtsOnly() }
                 }
             } message: {
                 Text("Choose what to include in the share.")
@@ -106,6 +114,28 @@ struct ItemDetailView: View {
                 Button("OK") { }
             } message: {
                 Text(error?.localizedDescription ?? "Unknown error")
+            }
+            .sheet(isPresented: $showingDebugInfo) {
+                NavigationStack {
+                    ScrollView {
+                        Text(debugInfo ?? "No info")
+                            .font(.system(.caption, design: .monospaced))
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .navigationTitle("Debug Info")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showingDebugInfo = false }
+                        }
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Copy") {
+                                UIPasteboard.general.string = debugInfo
+                            }
+                        }
+                    }
+                }
             }
             .sheet(item: $merkleTreeData) { data in
                 MerkleTreeView(
@@ -396,6 +426,24 @@ struct ItemDetailView: View {
                     .background(Color(.systemGray5))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                
+                // Debug button
+                Button {
+                    Task {
+                        debugInfo = await manager.getUpgradeDebugInfo(for: item)
+                        showingDebugInfo = true
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "ant")
+                        Text("Debug Upgrade")
+                    }
+                    .font(.caption)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
             
             // Share button
@@ -493,6 +541,34 @@ struct ItemDetailView: View {
         
         do {
             shareURLs = try await manager.getShareURLsWithCertificate(for: item)
+            if !shareURLs.isEmpty {
+                showingShareSheet = true
+            }
+        } catch {
+            self.error = error
+            showingError = true
+        }
+    }
+    
+    private func shareAll() async {
+        isGeneratingPDF = true
+        defer { isGeneratingPDF = false }
+        
+        do {
+            // Get PDF + original file + .ots
+            shareURLs = try await manager.getShareURLsAll(for: item)
+            if !shareURLs.isEmpty {
+                showingShareSheet = true
+            }
+        } catch {
+            self.error = error
+            showingError = true
+        }
+    }
+    
+    private func shareOtsOnly() async {
+        do {
+            shareURLs = try await manager.getShareURLsOtsOnly(for: item)
             if !shareURLs.isEmpty {
                 showingShareSheet = true
             }

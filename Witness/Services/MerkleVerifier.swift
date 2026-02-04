@@ -108,7 +108,11 @@ actor MerkleVerifier {
             // Pending attestation - followed by URL
             let urlLength = try reader.readVarInt()
             let urlBytes = try reader.readBytes(count: Int(urlLength))
-            let url = String(bytes: urlBytes, encoding: .utf8) ?? ""
+            var url = String(bytes: urlBytes, encoding: .utf8) ?? ""
+            // Clean URL - remove any leading non-URL characters
+            while !url.isEmpty && !url.hasPrefix("http") {
+                url.removeFirst()
+            }
             return .pending(calendarUrl: url)
         } else if Array(tag) == OTSConstants.attestationLitecoin {
             let heightBytes = try reader.readBytes(count: 4)
