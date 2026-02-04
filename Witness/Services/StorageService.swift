@@ -191,19 +191,39 @@ actor StorageService {
     func createShareBundle(itemId: UUID, contentFileName: String?, hasOtsData: Bool) async throws -> [URL] {
         var urls: [URL] = []
         
-        // Add content file if exists
+        // Create a temporary share directory to avoid file system timing issues
+        let shareDir = fileManager.temporaryDirectory.appendingPathComponent("WitnessShare-\(itemId.uuidString)", isDirectory: true)
+        
+        // Clean up any previous share directory
+        try? fileManager.removeItem(at: shareDir)
+        try fileManager.createDirectory(at: shareDir, withIntermediateDirectories: true)
+        
+        // Copy content file if exists
         if let filename = contentFileName {
-            let contentUrl = contentFileURL(filename: filename)
-            if fileManager.fileExists(atPath: contentUrl.path) {
-                urls.append(contentUrl)
+            let sourceUrl = contentFileURL(filename: filename)
+            if fileManager.fileExists(atPath: sourceUrl.path) {
+                // Use original filename for better UX when sharing
+                let destUrl = shareDir.appendingPathComponent(filename)
+                try fileManager.copyItem(at: sourceUrl, to: destUrl)
+                urls.append(destUrl)
             }
         }
         
-        // Add proof file if exists
+        // Copy proof file if exists
         if hasOtsData {
-            let proofUrl = proofFileURL(for: itemId)
-            if fileManager.fileExists(atPath: proofUrl.path) {
-                urls.append(proofUrl)
+            let sourceUrl = proofFileURL(for: itemId)
+            if fileManager.fileExists(atPath: sourceUrl.path) {
+                // Name the .ots file to match the content file
+                let otsFilename: String
+                if let contentName = contentFileName {
+                    let baseName = (contentName as NSString).deletingPathExtension
+                    otsFilename = "\(baseName).ots"
+                } else {
+                    otsFilename = "\(itemId.uuidString).ots"
+                }
+                let destUrl = shareDir.appendingPathComponent(otsFilename)
+                try fileManager.copyItem(at: sourceUrl, to: destUrl)
+                urls.append(destUrl)
             }
         }
         
