@@ -18,6 +18,10 @@ struct ItemDetailView: View {
     @State private var isGeneratingPDF = false
     @State private var error: Error?
     @State private var showingError = false
+    @State private var showingMerkleTree = false
+    @State private var merkleTreeData: MerkleTreeData?
+    
+    private let merkleVerifier = MerkleVerifier()
     
     var body: some View {
         NavigationStack {
@@ -100,6 +104,18 @@ struct ItemDetailView: View {
                 Button("OK") { }
             } message: {
                 Text(error?.localizedDescription ?? "Unknown error")
+            }
+            .sheet(isPresented: $showingMerkleTree) {
+                if let data = merkleTreeData {
+                    MerkleTreeView(
+                        originalHash: data.originalHash,
+                        computedHash: data.computedHash,
+                        operations: data.operations,
+                        pendingCalendars: data.pendingCalendars,
+                        blockHeight: item.bitcoinBlockHeight,
+                        blockTime: item.bitcoinBlockTime
+                    )
+                }
             }
             .task {
                 if item.contentType == .photo {
@@ -394,6 +410,22 @@ struct ItemDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isGeneratingPDF)
+            
+            // View Merkle Tree button (if has OTS data)
+            if item.otsData != nil || item.pendingOtsData != nil {
+                Button {
+                    Task { await loadMerkleTree() }
+                } label: {
+                    HStack {
+                        Image(systemName: "tree")
+                        Text("View Merkle Path")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(.systemGray5))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
         }
     }
     
@@ -462,6 +494,40 @@ struct ItemDetailView: View {
             showingError = true
         }
     }
+    
+    private func loadMerkleTree() async {
+        guard let otsData = item.otsData ?? item.pendingOtsData else { return }
+        
+        do {
+            let proof = try await merkleVerifier.parseOtsFile(otsData)
+            
+            // Extract pending calendars
+            let pendingCalendars = proof.attestations.compactMap { attestation -> String? in
+                if case .pending(let url) = attestation { return url }
+                return nil
+            }
+            
+            merkleTreeData = MerkleTreeData(
+                originalHash: proof.originalHash.hexString,
+                computedHash: "",  // Would need to compute this
+                operations: proof.operations,
+                pendingCalendars: pendingCalendars
+            )
+            showingMerkleTree = true
+        } catch {
+            self.error = error
+            showingError = true
+        }
+    }
+}
+
+// MARK: - Supporting Types
+
+struct MerkleTreeData {
+    let originalHash: String
+    let computedHash: String
+    let operations: [OTSOperation]
+    let pendingCalendars: [String]
 }
 
 // MARK: - Share Sheet
