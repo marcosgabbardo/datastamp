@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var syncService: CloudKitSyncService
     
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @State private var showingResetConfirmation = false
@@ -10,14 +11,66 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // iCloud Section (placeholder for future)
+                // iCloud Section
                 Section {
-                    Toggle("iCloud Sync", isOn: $iCloudSyncEnabled)
-                        .disabled(true) // Coming soon
+                    Toggle(isOn: $iCloudSyncEnabled) {
+                        HStack {
+                            Image(systemName: syncService.syncState.icon)
+                                .foregroundStyle(syncStateColor)
+                            Text("iCloud Sync")
+                        }
+                    }
+                    .onChange(of: iCloudSyncEnabled) { _, newValue in
+                        if newValue {
+                            Task {
+                                await syncService.sync()
+                            }
+                        }
+                    }
+                    
+                    if iCloudSyncEnabled {
+                        HStack {
+                            Text("Status")
+                            Spacer()
+                            if syncService.syncState == .syncing {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                            Text(syncService.syncState.description)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        if let lastSync = syncService.lastSyncDate {
+                            LabeledContent("Last Synced", value: lastSync.formatted(date: .abbreviated, time: .shortened))
+                        }
+                        
+                        if syncService.pendingChanges > 0 {
+                            LabeledContent("Pending Changes", value: "\(syncService.pendingChanges)")
+                        }
+                        
+                        Button {
+                            Task {
+                                await syncService.sync()
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                Text("Sync Now")
+                            }
+                        }
+                        .disabled(syncService.syncState == .syncing || syncService.syncState == .unavailable)
+                    }
                 } header: {
                     Text("iCloud")
                 } footer: {
-                    Text("Coming soon: Sync your timestamps across all your devices.")
+                    if syncService.syncState == .unavailable {
+                        Text("iCloud is not available. Please sign in to iCloud in Settings.")
+                    } else if let error = syncService.error {
+                        Text("Sync error: \(error.localizedDescription)")
+                            .foregroundStyle(.red)
+                    } else {
+                        Text("Sync your timestamps across all your devices. Only metadata and proofs are synced - your original files stay on device.")
+                    }
                 }
                 
                 // About Section
@@ -92,6 +145,15 @@ struct SettingsView: View {
         }
     }
     
+    private var syncStateColor: Color {
+        switch syncService.syncState {
+        case .idle: return .green
+        case .syncing: return .blue
+        case .error: return .red
+        case .unavailable: return .gray
+        }
+    }
+    
     private func deleteAllData() {
         do {
             try modelContext.delete(model: WitnessItem.self)
@@ -104,5 +166,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(CloudKitSyncService())
         .modelContainer(for: WitnessItem.self, inMemory: true)
 }

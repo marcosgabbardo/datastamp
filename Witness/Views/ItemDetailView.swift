@@ -14,6 +14,8 @@ struct ItemDetailView: View {
     @State private var showingShareSheet = false
     @State private var shareURLs: [URL] = []
     @State private var showingDeleteConfirmation = false
+    @State private var showingShareOptions = false
+    @State private var isGeneratingPDF = false
     @State private var error: Error?
     @State private var showingError = false
     
@@ -47,10 +49,19 @@ struct ItemDetailView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
-                            Task { await share() }
+                            showingShareOptions = true
                         } label: {
-                            Label("Share Proof", systemImage: "square.and.arrow.up")
+                            Label("Share", systemImage: "square.and.arrow.up")
                         }
+                        
+                        Button {
+                            Task { await exportPDF() }
+                        } label: {
+                            Label("Export PDF Certificate", systemImage: "doc.richtext")
+                        }
+                        .disabled(isGeneratingPDF)
+                        
+                        Divider()
                         
                         Button(role: .destructive) {
                             showingDeleteConfirmation = true
@@ -74,6 +85,16 @@ struct ItemDetailView: View {
                 }
             } message: {
                 Text("This will permanently delete the timestamp and its proof.")
+            }
+            .confirmationDialog("Share Options", isPresented: $showingShareOptions, titleVisibility: .visible) {
+                Button("Share with PDF Certificate") {
+                    Task { await shareWithCertificate() }
+                }
+                Button("Share Proof Files Only") {
+                    Task { await share() }
+                }
+            } message: {
+                Text("Choose what to include in the share.")
             }
             .alert("Error", isPresented: $showingError) {
                 Button("OK") { }
@@ -342,7 +363,7 @@ struct ItemDetailView: View {
             
             // Share button
             Button {
-                Task { await share() }
+                showingShareOptions = true
             } label: {
                 HStack {
                     Image(systemName: "square.and.arrow.up")
@@ -353,6 +374,26 @@ struct ItemDetailView: View {
                 .background(Color(.systemGray5))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            
+            // Export PDF button
+            Button {
+                Task { await exportPDF() }
+            } label: {
+                HStack {
+                    if isGeneratingPDF {
+                        ProgressView()
+                            .tint(.primary)
+                    } else {
+                        Image(systemName: "doc.richtext")
+                    }
+                    Text("Export PDF Certificate")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemGray5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(isGeneratingPDF)
         }
     }
     
@@ -377,6 +418,35 @@ struct ItemDetailView: View {
             if !shareURLs.isEmpty {
                 showingShareSheet = true
             }
+        } catch {
+            self.error = error
+            showingError = true
+        }
+    }
+    
+    private func shareWithCertificate() async {
+        isGeneratingPDF = true
+        defer { isGeneratingPDF = false }
+        
+        do {
+            shareURLs = try await manager.getShareURLsWithCertificate(for: item)
+            if !shareURLs.isEmpty {
+                showingShareSheet = true
+            }
+        } catch {
+            self.error = error
+            showingError = true
+        }
+    }
+    
+    private func exportPDF() async {
+        isGeneratingPDF = true
+        defer { isGeneratingPDF = false }
+        
+        do {
+            let pdfUrl = try await manager.generatePDFCertificate(for: item)
+            shareURLs = [pdfUrl]
+            showingShareSheet = true
         } catch {
             self.error = error
             showingError = true

@@ -64,6 +64,7 @@ enum OTSConstants {
 /// Service for interacting with OpenTimestamps
 actor OpenTimestampsService {
     private let session: URLSession
+    private let merkleVerifier = MerkleVerifier()
     
     init() {
         let config = URLSessionConfiguration.default
@@ -149,26 +150,38 @@ actor OpenTimestampsService {
             throw OTSError.pendingConfirmation
         }
         
-        // Extract Bitcoin block info from attestation
-        if let blockInfo = extractBitcoinBlockInfo(otsData) {
-            // Verify against blockchain
-            let verified = try await verifyAgainstBlockchain(
-                hash: originalHash,
-                blockHeight: blockInfo.height,
-                expectedMerkleRoot: blockInfo.merkleRoot
-            )
+        // Use the comprehensive Merkle verifier
+        do {
+            let proof = try await merkleVerifier.parseOtsFile(otsData)
+            let merkleResult = try await merkleVerifier.verifyProof(proof, originalHash: originalHash)
             
-            if verified {
-                return VerificationResult(
-                    isValid: true,
+            return VerificationResult(
+                isValid: merkleResult.isValid,
+                blockHeight: merkleResult.blockHeight,
+                blockTime: merkleResult.blockTime,
+                txId: merkleResult.blockHash
+            )
+        } catch {
+            // Fallback to simple extraction if full verification fails
+            if let blockInfo = extractBitcoinBlockInfo(otsData) {
+                let verified = try await verifyAgainstBlockchain(
+                    hash: originalHash,
                     blockHeight: blockInfo.height,
-                    blockTime: blockInfo.timestamp,
-                    txId: blockInfo.txId
+                    expectedMerkleRoot: blockInfo.merkleRoot
                 )
+                
+                if verified {
+                    return VerificationResult(
+                        isValid: true,
+                        blockHeight: blockInfo.height,
+                        blockTime: blockInfo.timestamp,
+                        txId: blockInfo.txId
+                    )
+                }
             }
+            
+            throw OTSError.verificationFailed("Could not verify against blockchain: \(error.localizedDescription)")
         }
-        
-        throw OTSError.verificationFailed("Could not verify against blockchain")
     }
     
     // MARK: - Private Methods
@@ -299,9 +312,7 @@ struct VerificationResult {
 // MARK: - Extensions
 
 extension Data {
-    var hexString: String {
-        map { String(format: "%02x", $0) }.joined()
-    }
+    // hexString is defined in MerkleVerifier.swift
     
     init?(hexString: String) {
         let len = hexString.count / 2

@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		018621C0CDF793E091D459D0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3867F22ADF96373A6D01F275 /* ContentView.swift */; };
 		10D5570A5837BBF777CF5032 /* WitnessItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3797E77A23D989198AEA238 /* WitnessItem.swift */; };
+		1C741FEC80B49169B8B0E62A /* MerkleVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D325A7D93371DDFEC67A60D6 /* MerkleVerifier.swift */; };
 		1D80B9DF51BB95689BD5417B /* WitnessShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 366772C19740FCBA0405BC27 /* WitnessShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		287DF5FA980F2D8B4AECE5E2 /* OpenTimestampsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10FC4EB5CE6557A6EF64B82D /* OpenTimestampsService.swift */; };
 		35044E01077E4A3934FE73F2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A51C94E363B6DF7C1E1E0F9 /* SettingsView.swift */; };
 		37DBE994A1ECCDB44CB0DA78 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D52A1D013867803673B67A49 /* Localizable.strings */; };
 		39C9FF172187DDFD18670A5A /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490ED391B95F7A4C01B9FBA1 /* HapticManager.swift */; };
+		53F779FCCF53E753876D8D11 /* CloudKitSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539E32BE7D7C4EE3C00283B1 /* CloudKitSyncService.swift */; };
 		54032541E9FA2BBB599C54CB /* WitnessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A5F267CA7B824D1FE17019 /* WitnessManager.swift */; };
 		679ACFCB668FE7295460BBE5 /* WitnessWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 49B8960CA1598F2CA99D5981 /* WitnessWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6DF4F4B0FE44F57F8CAC0CB7 /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74AF75B0FF5C0C6E7857509B /* ItemDetailView.swift */; };
@@ -21,6 +23,8 @@
 		93B89B59278E005C447BF7DD /* WidgetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD778D23B1C86D2B880DEEB /* WidgetService.swift */; };
 		98E1AE5F489711E341E4E3ED /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F617406DBFE116D7A731954 /* ShareViewController.swift */; };
 		99ED464613173EB701702A30 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718979A16D37546765FA04E /* StorageService.swift */; };
+		9D959F08E049DCB12A19ACF9 /* OpenTimestampsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E6BA0DFEFE7F0ED44624B7 /* OpenTimestampsServiceTests.swift */; };
+		A568DD16D788D4BDEB909E4B /* PDFExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043F2125FEBAD34AF2A920EF /* PDFExportService.swift */; };
 		BECF8D9D1023ED98383D8F41 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB666369082B1950BA87A75 /* NotificationService.swift */; };
 		C5081408615C9BA2BBE3738D /* AccessibilityModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E907537836FFA96AF10341B9 /* AccessibilityModifiers.swift */; };
 		C81686F3B2F97F1526B39305 /* CreateTimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58B10B38FF73E83504DE534 /* CreateTimestampView.swift */; };
@@ -43,6 +47,13 @@
 			remoteGlobalIDString = 5C8F59C3E03DDD87B532393B;
 			remoteInfo = WitnessWidget;
 		};
+		72B8109D2D8211858D3119AB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5DE08BFC18210C8548FE82D8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8926EE529F16A78EF6D2B226;
+			remoteInfo = Witness;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,6 +73,8 @@
 
 /* Begin PBXFileReference section */
 		003C9498EA506F48F2E4ECF9 /* Witness.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Witness.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		043F2125FEBAD34AF2A920EF /* PDFExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExportService.swift; sourceTree = "<group>"; };
+		0E7F44B24D67E6093141226E /* WitnessTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WitnessTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0EB666369082B1950BA87A75 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		10FC4EB5CE6557A6EF64B82D /* OpenTimestampsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTimestampsService.swift; sourceTree = "<group>"; };
 		1F8997FA9760B115038B506E /* WitnessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitnessApp.swift; sourceTree = "<group>"; };
@@ -74,6 +87,7 @@
 		490ED391B95F7A4C01B9FBA1 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		49B8960CA1598F2CA99D5981 /* WitnessWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WitnessWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5298319904DF8C8B59B964D7 /* WitnessShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WitnessShareExtension.entitlements; sourceTree = "<group>"; };
+		539E32BE7D7C4EE3C00283B1 /* CloudKitSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSyncService.swift; sourceTree = "<group>"; };
 		65A5F267CA7B824D1FE17019 /* WitnessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitnessManager.swift; sourceTree = "<group>"; };
 		74AF75B0FF5C0C6E7857509B /* ItemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemDetailView.swift; sourceTree = "<group>"; };
 		7A155D1F24DDB79ABBAEE9BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -83,7 +97,9 @@
 		A3797E77A23D989198AEA238 /* WitnessItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitnessItem.swift; sourceTree = "<group>"; };
 		B718979A16D37546765FA04E /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		BE50D7E130B16B1AA9E59158 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		D325A7D93371DDFEC67A60D6 /* MerkleVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerkleVerifier.swift; sourceTree = "<group>"; };
 		D68E6F1AF62378618E2888CA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		D8E6BA0DFEFE7F0ED44624B7 /* OpenTimestampsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTimestampsServiceTests.swift; sourceTree = "<group>"; };
 		E3E4E34287D3F0D856FF79C1 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		E47E05C83B151464DE5A7793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E58B10B38FF73E83504DE534 /* CreateTimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTimestampView.swift; sourceTree = "<group>"; };
@@ -110,8 +126,11 @@
 		56239505920DC61A85F4CEF5 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				539E32BE7D7C4EE3C00283B1 /* CloudKitSyncService.swift */,
+				D325A7D93371DDFEC67A60D6 /* MerkleVerifier.swift */,
 				0EB666369082B1950BA87A75 /* NotificationService.swift */,
 				10FC4EB5CE6557A6EF64B82D /* OpenTimestampsService.swift */,
+				043F2125FEBAD34AF2A920EF /* PDFExportService.swift */,
 				B718979A16D37546765FA04E /* StorageService.swift */,
 				3FD778D23B1C86D2B880DEEB /* WidgetService.swift */,
 				65A5F267CA7B824D1FE17019 /* WitnessManager.swift */,
@@ -147,11 +166,20 @@
 			path = Witness;
 			sourceTree = "<group>";
 		};
+		832A716E3AE2AA71F950BBAB /* WitnessTests */ = {
+			isa = PBXGroup;
+			children = (
+				D8E6BA0DFEFE7F0ED44624B7 /* OpenTimestampsServiceTests.swift */,
+			);
+			path = WitnessTests;
+			sourceTree = "<group>";
+		};
 		8355A98CE88B93018DD2A824 = {
 			isa = PBXGroup;
 			children = (
 				5D26D896382E9B55A14C1DDF /* Witness */,
 				FB1788B2E84968CEEB0340C5 /* WitnessShareExtension */,
+				832A716E3AE2AA71F950BBAB /* WitnessTests */,
 				EFCE4F8048C8375370863FB9 /* WitnessWidget */,
 				98639BA6528D395635163C41 /* Products */,
 			);
@@ -171,6 +199,7 @@
 			children = (
 				003C9498EA506F48F2E4ECF9 /* Witness.app */,
 				366772C19740FCBA0405BC27 /* WitnessShareExtension.appex */,
+				0E7F44B24D67E6093141226E /* WitnessTests.xctest */,
 				49B8960CA1598F2CA99D5981 /* WitnessWidget.appex */,
 			);
 			name = Products;
@@ -244,6 +273,24 @@
 			productReference = 003C9498EA506F48F2E4ECF9 /* Witness.app */;
 			productType = "com.apple.product-type.application";
 		};
+		89D6D0C06414FF70DF7E7EC1 /* WitnessTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95875EB0D47B7202B1448FCD /* Build configuration list for PBXNativeTarget "WitnessTests" */;
+			buildPhases = (
+				B8F7D09C160F9C405867E232 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				37A5D70D1D3D1A386443AE14 /* PBXTargetDependency */,
+			);
+			name = WitnessTests;
+			packageProductDependencies = (
+			);
+			productName = WitnessTests;
+			productReference = 0E7F44B24D67E6093141226E /* WitnessTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		9CFF8F53E21B40812F252AC6 /* WitnessShareExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3D2ED9D3AF127B02FAF54576 /* Build configuration list for PBXNativeTarget "WitnessShareExtension" */;
@@ -278,6 +325,10 @@
 						DevelopmentTeam = 84P86W64VJ;
 						ProvisioningStyle = Automatic;
 					};
+					89D6D0C06414FF70DF7E7EC1 = {
+						DevelopmentTeam = 84P86W64VJ;
+						ProvisioningStyle = Automatic;
+					};
 					9CFF8F53E21B40812F252AC6 = {
 						DevelopmentTeam = 84P86W64VJ;
 						ProvisioningStyle = Automatic;
@@ -301,6 +352,7 @@
 			targets = (
 				8926EE529F16A78EF6D2B226 /* Witness */,
 				9CFF8F53E21B40812F252AC6 /* WitnessShareExtension */,
+				89D6D0C06414FF70DF7E7EC1 /* WitnessTests */,
 				5C8F59C3E03DDD87B532393B /* WitnessWidget */,
 			);
 		};
@@ -326,6 +378,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B8F7D09C160F9C405867E232 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D959F08E049DCB12A19ACF9 /* OpenTimestampsServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C178493F1314F0FB0F44ECB4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -339,13 +399,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				C5081408615C9BA2BBE3738D /* AccessibilityModifiers.swift in Sources */,
+				53F779FCCF53E753876D8D11 /* CloudKitSyncService.swift in Sources */,
 				018621C0CDF793E091D459D0 /* ContentView.swift in Sources */,
 				C81686F3B2F97F1526B39305 /* CreateTimestampView.swift in Sources */,
 				39C9FF172187DDFD18670A5A /* HapticManager.swift in Sources */,
 				6DF4F4B0FE44F57F8CAC0CB7 /* ItemDetailView.swift in Sources */,
+				1C741FEC80B49169B8B0E62A /* MerkleVerifier.swift in Sources */,
 				BECF8D9D1023ED98383D8F41 /* NotificationService.swift in Sources */,
 				E4A0849CE4B1132427434FED /* OnboardingView.swift in Sources */,
 				287DF5FA980F2D8B4AECE5E2 /* OpenTimestampsService.swift in Sources */,
+				A568DD16D788D4BDEB909E4B /* PDFExportService.swift in Sources */,
 				35044E01077E4A3934FE73F2 /* SettingsView.swift in Sources */,
 				99ED464613173EB701702A30 /* StorageService.swift in Sources */,
 				93B89B59278E005C447BF7DD /* WidgetService.swift in Sources */,
@@ -362,6 +425,11 @@
 			isa = PBXTargetDependency;
 			target = 9CFF8F53E21B40812F252AC6 /* WitnessShareExtension */;
 			targetProxy = 05329210EDDFE71128119BD8 /* PBXContainerItemProxy */;
+		};
+		37A5D70D1D3D1A386443AE14 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8926EE529F16A78EF6D2B226 /* Witness */;
+			targetProxy = 72B8109D2D8211858D3119AB /* PBXContainerItemProxy */;
 		};
 		F92EBFF6E4A79A0D0666B8B1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -470,17 +538,36 @@
 			};
 			name = Debug;
 		};
+		6BE00688608E6A517B949EB9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Witness.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Witness";
+			};
+			name = Release;
+		};
 		711B02B7924C6CA89F430996 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = WitnessWidget/WitnessWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = WitnessWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.widget;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -488,16 +575,35 @@
 			};
 			name = Release;
 		};
+		794B8F7E60D93C3390A6E791 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Witness.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Witness";
+			};
+			name = Debug;
+		};
 		967CA31C74085D9AABA4330C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = WitnessShareExtension/WitnessShareExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = WitnessShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.share;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -569,12 +675,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = WitnessShareExtension/WitnessShareExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = WitnessShareExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.share;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -607,12 +715,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = WitnessWidget/WitnessWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = WitnessWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.makiavel.witness.widget;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -646,6 +756,15 @@
 			buildConfigurations = (
 				42E228111FCADAE792CCA7E3 /* Debug */,
 				A99EF3E3E26716F2AD788D18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		95875EB0D47B7202B1448FCD /* Build configuration list for PBXNativeTarget "WitnessTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				794B8F7E60D93C3390A6E791 /* Debug */,
+				6BE00688608E6A517B949EB9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

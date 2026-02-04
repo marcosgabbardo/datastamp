@@ -9,6 +9,7 @@ final class WitnessManager {
     // MARK: - Services
     private let otsService = OpenTimestampsService()
     private let storageService = StorageService()
+    private let pdfService = PDFExportService()
     
     // MARK: - State
     var isProcessing = false
@@ -264,6 +265,37 @@ final class WitnessManager {
             contentFileName: contentFileName,
             hasOtsData: hasOtsData
         )
+    }
+    
+    /// Generate PDF certificate for an item
+    func generatePDFCertificate(for item: WitnessItem) async throws -> URL {
+        // Create snapshot for thread-safe access
+        let snapshot = WitnessItemSnapshot(from: item)
+        
+        // Load image if it's a photo
+        var contentImage: UIImage?
+        if item.contentType == .photo {
+            contentImage = await loadImage(for: item)
+        }
+        
+        // Generate PDF
+        let pdfData = try await pdfService.generateCertificate(for: snapshot, contentImage: contentImage)
+        
+        // Save to temp file
+        let url = try await pdfService.saveCertificateToFile(data: pdfData, itemId: item.id)
+        
+        return url
+    }
+    
+    /// Get share URLs including PDF certificate
+    func getShareURLsWithCertificate(for item: WitnessItem) async throws -> [URL] {
+        var urls = try await getShareURLs(for: item)
+        
+        // Add PDF certificate
+        let pdfUrl = try await generatePDFCertificate(for: item)
+        urls.insert(pdfUrl, at: 0) // PDF first
+        
+        return urls
     }
     
     /// Load thumbnail for an item

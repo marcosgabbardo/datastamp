@@ -39,6 +39,10 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.makiavel.witness
+        com.apple.developer.icloud-services:
+          - CloudKit
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.makiavel.witness
     dependencies:
       - target: WitnessShareExtension
         embed: true
@@ -79,6 +83,8 @@ targets:
         INFOPLIST_FILE: WitnessShareExtension/Info.plist
         SKIP_INSTALL: true
         CODE_SIGN_ENTITLEMENTS: WitnessShareExtension/WitnessShareExtension.entitlements
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
     entitlements:
       path: WitnessShareExtension/WitnessShareExtension.entitlements
       properties:
@@ -116,6 +122,8 @@ targets:
         SKIP_INSTALL: true
         CODE_SIGN_ENTITLEMENTS: WitnessWidget/WitnessWidget.entitlements
         ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: WidgetBackground
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
     entitlements:
       path: WitnessWidget/WitnessWidget.entitlements
       properties:
@@ -133,3 +141,17 @@ targets:
         CFBundleExecutable: $(EXECUTABLE_NAME)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+  WitnessTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: WitnessTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.makiavel.witness.tests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Witness.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Witness
+        BUNDLE_LOADER: $(TEST_HOST)
+        GENERATE_INFOPLIST_FILE: true
+    dependencies:
+      - target: Witness

@@ -5,6 +5,7 @@ import UserNotifications
 @main
 struct WitnessApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var syncService = CloudKitSyncService()
     
     let container: ModelContainer
     
@@ -16,7 +17,7 @@ struct WitnessApp: App {
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false,
-                cloudKitDatabase: .none
+                cloudKitDatabase: .none // We handle CloudKit manually for better control
             )
             container = try ModelContainer(
                 for: schema,
@@ -30,10 +31,14 @@ struct WitnessApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(syncService)
                 .task {
                     // Request notification permission
                     await NotificationService.shared.requestAuthorization()
                     await NotificationService.shared.registerCategories()
+                    
+                    // Configure CloudKit sync
+                    await syncService.configure(with: container.mainContext)
                 }
         }
         .modelContainer(container)
