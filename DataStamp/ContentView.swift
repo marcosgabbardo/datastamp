@@ -13,8 +13,11 @@ struct ContentView: View {
     @State private var showingOnboarding = false
     @State private var showingSettings = false
     @State private var showingVerify = false
+    @State private var showingFolders = false
     @State private var selectedItem: DataStampItem?
     @State private var selectedFilter: ItemFilter = .all
+    @State private var selectedFolder: Folder?
+    @State private var selectedTag: String?
     @State private var searchText = ""
     
     enum ItemFilter: String, CaseIterable {
@@ -60,10 +63,18 @@ struct ContentView: View {
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showingSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
+                    HStack(spacing: 12) {
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                        
+                        Button {
+                            showingFolders = true
+                        } label: {
+                            Image(systemName: selectedFolder != nil ? "folder.fill" : "folder")
+                        }
                     }
                 }
                 
@@ -111,6 +122,11 @@ struct ContentView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
                     .environmentObject(syncService)
+            }
+            .sheet(isPresented: $showingFolders) {
+                FolderListView(selectedFolder: selectedFolder) { folder in
+                    selectedFolder = folder
+                }
             }
             .onAppear {
                 if !hasSeenOnboarding {
@@ -162,6 +178,68 @@ struct ContentView: View {
     
     private var itemListView: some View {
         List {
+            // Active filters section
+            if selectedFolder != nil || selectedTag != nil {
+                Section {
+                    HStack {
+                        if let folder = selectedFolder {
+                            FilterChip(
+                                icon: folder.icon,
+                                label: folder.name,
+                                color: folder.color
+                            ) {
+                                selectedFolder = nil
+                            }
+                        }
+                        
+                        if let tag = selectedTag {
+                            FilterChip(
+                                icon: "tag.fill",
+                                label: tag,
+                                color: .orange
+                            ) {
+                                selectedTag = nil
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Button("Clear All") {
+                            selectedFolder = nil
+                            selectedTag = nil
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            
+            // Tags filter row
+            if !allTags.isEmpty && selectedTag == nil {
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(allTags, id: \.self) { tag in
+                                Button {
+                                    selectedTag = tag
+                                } label: {
+                                    Text(tag)
+                                        .font(.caption)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color.secondary.opacity(0.1))
+                                        .clipShape(Capsule())
+                                }
+                                .foregroundStyle(.primary)
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+            }
+            
+            // Items
             ForEach(filteredItems) { item in
                 ItemRowCell(item: item, manager: datestampManager)
                     .contentShape(Rectangle())
@@ -185,6 +263,16 @@ struct ContentView: View {
             result = items.filter { $0.status == .pending || $0.status == .submitted }
         case .confirmed:
             result = items.filter { $0.status == .confirmed || $0.status == .verified }
+        }
+        
+        // Apply folder filter
+        if let folder = selectedFolder {
+            result = result.filter { $0.folder?.id == folder.id }
+        }
+        
+        // Apply tag filter
+        if let tag = selectedTag {
+            result = result.filter { $0.tags.contains(tag) }
         }
         
         // Apply search filter
@@ -211,11 +299,19 @@ struct ContentView: View {
                 if item.hashHex.lowercased().contains(lowercasedSearch) {
                     return true
                 }
+                // Search in tags
+                if item.tags.contains(where: { $0.lowercased().contains(lowercasedSearch) }) {
+                    return true
+                }
                 return false
             }
         }
         
         return result
+    }
+    
+    private var allTags: [String] {
+        Array(Set(items.flatMap { $0.tags })).sorted()
     }
     
     private var createButton: some View {
@@ -242,6 +338,35 @@ struct ContentView: View {
                 await datestampManager.deleteItem(item, context: modelContext)
             }
         }
+    }
+}
+
+// MARK: - Filter Chip
+
+struct FilterChip: View {
+    let icon: String
+    let label: String
+    let color: Color
+    let onRemove: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption)
+            Text(label)
+                .font(.caption)
+            Button {
+                onRemove()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.caption)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(color.opacity(0.15))
+        .foregroundStyle(color)
+        .clipShape(Capsule())
     }
 }
 
@@ -275,6 +400,17 @@ struct ItemRowCell: View {
                     Text(statusText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    
+                    if let folder = item.folder {
+                        Image(systemName: folder.icon)
+                            .font(.caption2)
+                            .foregroundStyle(folder.color)
+                    }
+                }
+                
+                // Tags
+                if !item.tags.isEmpty {
+                    InlineTagsView(tags: item.tags, maxVisible: 2)
                 }
             }
             

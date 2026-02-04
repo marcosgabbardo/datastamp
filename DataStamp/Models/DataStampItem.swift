@@ -1,5 +1,103 @@
 import Foundation
 import SwiftData
+import SwiftUI
+
+// MARK: - Folder Model
+
+/// Folder for organizing timestamps
+@Model
+final class Folder {
+    var id: UUID
+    var name: String
+    var icon: String
+    var colorHex: String
+    var createdAt: Date
+    var sortOrder: Int
+    
+    @Relationship(deleteRule: .nullify, inverse: \DataStampItem.folder)
+    var items: [DataStampItem]?
+    
+    init(name: String, icon: String = "folder.fill", colorHex: String = "F7931A", sortOrder: Int = 0) {
+        self.id = UUID()
+        self.name = name
+        self.icon = icon
+        self.colorHex = colorHex
+        self.createdAt = Date()
+        self.sortOrder = sortOrder
+    }
+    
+    var color: Color {
+        Color(hex: colorHex) ?? .orange
+    }
+    
+    var itemCount: Int {
+        items?.count ?? 0
+    }
+}
+
+// MARK: - Color Extension
+
+extension Color {
+    init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+        
+        let r = Double((rgb & 0xFF0000) >> 16) / 255.0
+        let g = Double((rgb & 0x00FF00) >> 8) / 255.0
+        let b = Double(rgb & 0x0000FF) / 255.0
+        
+        self.init(red: r, green: g, blue: b)
+    }
+    
+    var hexString: String {
+        guard let components = UIColor(self).cgColor.components, components.count >= 3 else {
+            return "F7931A"
+        }
+        let r = Int(components[0] * 255)
+        let g = Int(components[1] * 255)
+        let b = Int(components[2] * 255)
+        return String(format: "%02X%02X%02X", r, g, b)
+    }
+}
+
+// MARK: - Predefined Tags
+
+enum PredefinedTag: String, CaseIterable {
+    case important = "Important"
+    case work = "Work"
+    case personal = "Personal"
+    case legal = "Legal"
+    case financial = "Financial"
+    case creative = "Creative"
+    case archive = "Archive"
+    
+    var icon: String {
+        switch self {
+        case .important: return "star.fill"
+        case .work: return "briefcase.fill"
+        case .personal: return "person.fill"
+        case .legal: return "building.columns.fill"
+        case .financial: return "dollarsign.circle.fill"
+        case .creative: return "paintbrush.fill"
+        case .archive: return "archivebox.fill"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .important: return .yellow
+        case .work: return .blue
+        case .personal: return .green
+        case .legal: return .purple
+        case .financial: return .mint
+        case .creative: return .pink
+        case .archive: return .gray
+        }
+    }
+}
 
 /// Status of a timestamp in the OpenTimestamps workflow
 enum DataStampStatus: String, Codable {
@@ -34,6 +132,10 @@ final class DataStampItem {
     var title: String?
     var notes: String?
     
+    // MARK: - Organization
+    var tags: [String]
+    var folder: Folder?
+    
     // MARK: - Status
     var status: DataStampStatus
     var statusMessage: String?
@@ -58,7 +160,9 @@ final class DataStampItem {
         contentHash: Data,
         title: String? = nil,
         textContent: String? = nil,
-        contentFileName: String? = nil
+        contentFileName: String? = nil,
+        tags: [String] = [],
+        folder: Folder? = nil
     ) {
         self.id = UUID()
         self.createdAt = Date()
@@ -67,6 +171,8 @@ final class DataStampItem {
         self.title = title
         self.textContent = textContent
         self.contentFileName = contentFileName
+        self.tags = tags
+        self.folder = folder
         self.status = .pending
         self.lastUpdated = Date()
     }

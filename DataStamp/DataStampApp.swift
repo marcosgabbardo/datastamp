@@ -12,7 +12,8 @@ struct DataStampApp: App {
     init() {
         do {
             let schema = Schema([
-                DataStampItem.self
+                DataStampItem.self,
+                Folder.self
             ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,

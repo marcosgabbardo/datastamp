@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		020E25AAB57E18AE22264125 /* TagsEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C573ED3B5305E0B281FEEB7A /* TagsEditorView.swift */; };
 		0237122632960FB75546A29E /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86FD1EB9CBF47313706795FD /* NotificationService.swift */; };
 		032CF683AC378AC4EB5C3BD2 /* DataStampManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6081FFCEAFDC57707A4B5EAE /* DataStampManager.swift */; };
+		06193CE4C7771156DAF2D0C9 /* FolderListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B5D36AF86A625DABC9F130 /* FolderListView.swift */; };
 		0625CB4BA6A9D47B147F19BA /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA788A0A12ABD9A62BA53FA /* OnboardingView.swift */; };
 		076D0EB262333119420BA642 /* DataStampItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B1DCA8D619D8172960A9E9 /* DataStampItem.swift */; };
 		1FE825FA8AB870507A51D4F4 /* DataStampIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F33D84288A5CBA69E21DB948 /* DataStampIntents.swift */; };
@@ -29,6 +31,7 @@
 		CEC9B7B55F4063E3A41AED62 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35F62BD59B7ACDDDEA5D31A /* StorageService.swift */; };
 		D3C51ED6E00F0A393A3D0B75 /* MerkleVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0402255BA4F935CECDB7F3 /* MerkleVerifier.swift */; };
 		DBB244B2E5FB129E38178C48 /* OpenTimestampsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3A95B552BEF99823531FDE8 /* OpenTimestampsServiceTests.swift */; };
+		E1209E9FCA6C1B194481AF3F /* FolderPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0415E69BC29882B47E1094F /* FolderPickerView.swift */; };
 		E2E504E54CBC559F762C9EAA /* PDFExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DDD73F1F1D2D18DCDB3EA5 /* PDFExportService.swift */; };
 		E5EA23B2DEFA0A09CF74F218 /* DataStampWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3AB676D32AE7E491A344BCFD /* DataStampWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F7544170E983F75B33471ACA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FA5A574FFDB2708DBC8141 /* ContentView.swift */; };
@@ -89,6 +92,7 @@
 		42D3071A27F8483373140E26 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		48FA5A574FFDB2708DBC8141 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		49ACC14023DD1BF635FEFABE /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		50B5D36AF86A625DABC9F130 /* FolderListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderListView.swift; sourceTree = "<group>"; };
 		57FD014D205D093F5B5997C5 /* en.lproj */ = {isa = PBXFileReference; path = en.lproj; sourceTree = "<group>"; };
 		6081FFCEAFDC57707A4B5EAE /* DataStampManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampManager.swift; sourceTree = "<group>"; };
 		693D3C50B0F3937C5B4D5C5E /* DataStampTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DataStampTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,9 +111,11 @@
 		B75D531BB67F4524C89B1679 /* OpenTimestampsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTimestampsService.swift; sourceTree = "<group>"; };
 		C149FF7D4DB901B06683D4EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C2D46DD7D37CD474789B778C /* DataStampApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampApp.swift; sourceTree = "<group>"; };
+		C573ED3B5305E0B281FEEB7A /* TagsEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsEditorView.swift; sourceTree = "<group>"; };
 		D0DDD73F1F1D2D18DCDB3EA5 /* PDFExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExportService.swift; sourceTree = "<group>"; };
 		DFB05F2EB17AAF62B7C14E0B /* DataStampWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampWidget.swift; sourceTree = "<group>"; };
 		ECA788A0A12ABD9A62BA53FA /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		F0415E69BC29882B47E1094F /* FolderPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPickerView.swift; sourceTree = "<group>"; };
 		F30C8B9CB72832C776E8E9F3 /* ItemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemDetailView.swift; sourceTree = "<group>"; };
 		F33D84288A5CBA69E21DB948 /* DataStampIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampIntents.swift; sourceTree = "<group>"; };
 		F35F62BD59B7ACDDDEA5D31A /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
@@ -240,10 +246,13 @@
 			isa = PBXGroup;
 			children = (
 				09B3138AB49EA8EFEA4EAD25 /* CreateTimestampView.swift */,
+				50B5D36AF86A625DABC9F130 /* FolderListView.swift */,
+				F0415E69BC29882B47E1094F /* FolderPickerView.swift */,
 				F30C8B9CB72832C776E8E9F3 /* ItemDetailView.swift */,
 				41D4AF2B4E3C4A3141015EAA /* MerkleTreeView.swift */,
 				ECA788A0A12ABD9A62BA53FA /* OnboardingView.swift */,
 				89E608E6F9B10A98E8C1D9D3 /* SettingsView.swift */,
+				C573ED3B5305E0B281FEEB7A /* TagsEditorView.swift */,
 				11DD77686E039907A6D5C151 /* VerifyExternalView.swift */,
 			);
 			path = Views;
@@ -407,6 +416,8 @@
 				1FE825FA8AB870507A51D4F4 /* DataStampIntents.swift in Sources */,
 				076D0EB262333119420BA642 /* DataStampItem.swift in Sources */,
 				032CF683AC378AC4EB5C3BD2 /* DataStampManager.swift in Sources */,
+				06193CE4C7771156DAF2D0C9 /* FolderListView.swift in Sources */,
+				E1209E9FCA6C1B194481AF3F /* FolderPickerView.swift in Sources */,
 				520B04194B97614EA2C0C0AE /* HapticManager.swift in Sources */,
 				200CD6F4E53DD271AEFAA531 /* ItemDetailView.swift in Sources */,
 				67177A982CBFCAB87047EB3E /* MerkleTreeView.swift in Sources */,
@@ -417,6 +428,7 @@
 				E2E504E54CBC559F762C9EAA /* PDFExportService.swift in Sources */,
 				FA0C0B35A20C895F6C0185E4 /* SettingsView.swift in Sources */,
 				CEC9B7B55F4063E3A41AED62 /* StorageService.swift in Sources */,
+				020E25AAB57E18AE22264125 /* TagsEditorView.swift in Sources */,
 				3B33F573DA0E6CE829C3D560 /* VerifyExternalView.swift in Sources */,
 				3D72D278023885EC502A83BC /* WidgetService.swift in Sources */,
 			);

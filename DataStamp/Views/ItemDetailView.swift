@@ -21,6 +21,10 @@ struct ItemDetailView: View {
     @State private var showingError = false
     @State private var merkleTreeData: MerkleTreeData?
     @State private var showingImportProof = false
+    @State private var showingTagsEditor = false
+    @State private var showingFolderPicker = false
+    
+    @Query(sort: \Folder.sortOrder) private var folders: [Folder]
     
     private let merkleVerifier = MerkleVerifier()
     private let otsService = OpenTimestampsService()
@@ -37,6 +41,9 @@ struct ItemDetailView: View {
                     
                     // Details Section
                     detailsSection
+                    
+                    // Organization Section
+                    organizationSection
                     
                     // Actions Section
                     actionsSection
@@ -343,6 +350,86 @@ struct ItemDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
+    }
+    
+    // MARK: - Organization Section
+    
+    private var organizationSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Organization")
+                .font(.headline)
+            
+            VStack(spacing: 0) {
+                // Folder
+                Button {
+                    showingFolderPicker = true
+                } label: {
+                    HStack {
+                        Image(systemName: item.folder?.icon ?? "folder")
+                            .foregroundStyle(item.folder?.color ?? .secondary)
+                            .frame(width: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Folder")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(item.folder?.name ?? "None")
+                                .font(.subheadline)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding()
+                }
+                .foregroundStyle(.primary)
+                
+                Divider()
+                
+                // Tags
+                Button {
+                    showingTagsEditor = true
+                } label: {
+                    HStack {
+                        Image(systemName: "tag")
+                            .foregroundStyle(.orange)
+                            .frame(width: 24)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Tags")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            
+                            if item.tags.isEmpty {
+                                Text("None")
+                                    .font(.subheadline)
+                            } else {
+                                InlineTagsView(tags: item.tags, maxVisible: 4)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding()
+                }
+                .foregroundStyle(.primary)
+            }
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .sheet(isPresented: $showingTagsEditor) {
+            TagsEditorView(item: item)
+        }
+        .sheet(isPresented: $showingFolderPicker) {
+            FolderPickerView(item: item, folders: folders)
+        }
     }
     
     // MARK: - Actions Section
