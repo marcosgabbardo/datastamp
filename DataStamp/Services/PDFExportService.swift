@@ -6,6 +6,15 @@ import CoreImage.CIFilterBuiltins
 /// Service for generating PDF certificates of timestamps
 actor PDFExportService {
     
+    // MARK: - Brand Colors
+    
+    private let bitcoinOrange = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0)
+    private let darkText = UIColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
+    private let mediumText = UIColor(red: 80/255, green: 80/255, blue: 80/255, alpha: 1.0)
+    private let lightText = UIColor(red: 130/255, green: 130/255, blue: 130/255, alpha: 1.0)
+    private let borderGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1.0)
+    private let backgroundCream = UIColor(red: 253/255, green: 251/255, blue: 247/255, alpha: 1.0)
+    
     // MARK: - PDF Generation
     
     /// Generate a PDF certificate for a timestamp
@@ -35,7 +44,7 @@ actor PDFExportService {
         return url
     }
     
-    // MARK: - Drawing
+    // MARK: - Main Drawing
     
     private func drawCertificate(
         in context: CGContext,
@@ -43,320 +52,564 @@ actor PDFExportService {
         item: DataStampItemSnapshot,
         contentImage: UIImage?
     ) {
-        let margin: CGFloat = 50
-        let contentWidth = pageRect.width - (margin * 2)
-        var yPosition: CGFloat = margin // Start from top
+        let margin: CGFloat = 40
+        let innerMargin: CGFloat = 55
+        var yPosition: CGFloat = margin
         
-        // Colors
-        let primaryColor = UIColor(red: 0.95, green: 0.6, blue: 0.1, alpha: 1.0) // Orange
-        let textColor = UIColor.black
-        let subtitleColor = UIColor.darkGray
-        let borderColor = UIColor.lightGray
+        // === BACKGROUND ===
+        context.setFillColor(backgroundCream.cgColor)
+        context.fill(pageRect)
         
-        // === TOP BORDER ===
-        context.setStrokeColor(primaryColor.cgColor)
-        context.setLineWidth(3)
-        context.move(to: CGPoint(x: margin, y: pageRect.height - yPosition))
-        context.addLine(to: CGPoint(x: pageRect.width - margin, y: pageRect.height - yPosition))
-        context.strokePath()
+        // === DECORATIVE BORDER (Triple line - certificate style) ===
+        drawCertificateBorder(context: context, pageRect: pageRect, margin: margin)
         
-        yPosition += 30
+        // === CORNER ORNAMENTS ===
+        drawCornerOrnaments(context: context, pageRect: pageRect, margin: margin)
+        
+        yPosition += 25
+        
+        // === HEADER SEAL ===
+        let sealSize: CGFloat = 60
+        let sealX = (pageRect.width - sealSize) / 2
+        let sealY = pageRect.height - yPosition - sealSize
+        drawBitcoinSeal(context: context, at: CGPoint(x: sealX, y: sealY), size: sealSize)
+        
+        yPosition += sealSize + 15
         
         // === TITLE ===
-        let titleFont = UIFont.systemFont(ofSize: 28, weight: .bold)
-        let title = "Timestamp Certificate"
+        let titleFont = UIFont(name: "Georgia-Bold", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .bold)
+        let title = "CERTIFICATE OF EXISTENCE"
         let titleAttr: [NSAttributedString.Key: Any] = [
             .font: titleFont,
-            .foregroundColor: textColor
+            .foregroundColor: darkText,
+            .kern: 2.0
         ]
         let titleSize = title.size(withAttributes: titleAttr)
         let titleX = (pageRect.width - titleSize.width) / 2
         let titleY = pageRect.height - yPosition - titleSize.height
         title.draw(at: CGPoint(x: titleX, y: titleY), withAttributes: titleAttr)
         
-        yPosition += titleSize.height + 8
+        yPosition += titleSize.height + 6
         
         // === SUBTITLE ===
-        let subtitleFont = UIFont.systemFont(ofSize: 14, weight: .regular)
-        let subtitle = "Powered by OpenTimestamps & Bitcoin"
+        let subtitleFont = UIFont(name: "Georgia-Italic", size: 11) ?? UIFont.italicSystemFont(ofSize: 11)
+        let subtitle = "Cryptographic Proof Anchored to the Bitcoin Blockchain"
         let subtitleAttr: [NSAttributedString.Key: Any] = [
             .font: subtitleFont,
-            .foregroundColor: subtitleColor
+            .foregroundColor: mediumText
         ]
         let subtitleSize = subtitle.size(withAttributes: subtitleAttr)
         let subtitleX = (pageRect.width - subtitleSize.width) / 2
         let subtitleY = pageRect.height - yPosition - subtitleSize.height
         subtitle.draw(at: CGPoint(x: subtitleX, y: subtitleY), withAttributes: subtitleAttr)
         
-        yPosition += subtitleSize.height + 25
+        yPosition += subtitleSize.height + 8
+        
+        // === DECORATIVE LINE ===
+        drawDecorativeLine(context: context, y: pageRect.height - yPosition, pageRect: pageRect, margin: innerMargin + 30)
+        
+        yPosition += 20
         
         // === STATUS BADGE ===
-        let badgeHeight: CGFloat = 32
-        let badgeWidth: CGFloat = 160
-        let badgeX = (pageRect.width - badgeWidth) / 2
-        let badgeY = pageRect.height - yPosition - badgeHeight
+        let badgeY = pageRect.height - yPosition - 28
+        drawStatusBadge(context: context, status: item.status, centerX: pageRect.width / 2, y: badgeY)
         
-        let badgeColor: UIColor
-        let badgeText: String
+        yPosition += 38
         
-        switch item.status {
+        // === CERTIFICATE NUMBER ===
+        let certNumFont = UIFont.monospacedSystemFont(ofSize: 9, weight: .medium)
+        let certNum = "Certificate No. \(item.id.uuidString.prefix(8).uppercased())"
+        let certNumAttr: [NSAttributedString.Key: Any] = [
+            .font: certNumFont,
+            .foregroundColor: lightText
+        ]
+        let certNumSize = certNum.size(withAttributes: certNumAttr)
+        certNum.draw(at: CGPoint(x: (pageRect.width - certNumSize.width) / 2, y: pageRect.height - yPosition - certNumSize.height), withAttributes: certNumAttr)
+        
+        yPosition += certNumSize.height + 20
+        
+        // === MAIN CONTENT AREA ===
+        let contentStartY = yPosition
+        
+        // Left column - Document Info
+        let leftColumnX = innerMargin
+        let columnWidth = (pageRect.width - innerMargin * 2 - 30) / 2
+        
+        yPosition = drawSection(
+            context: context,
+            title: "DOCUMENT",
+            items: buildDocumentItems(item),
+            startY: yPosition,
+            x: leftColumnX,
+            width: columnWidth,
+            pageRect: pageRect
+        )
+        
+        // Right column - Blockchain Proof
+        var rightYPosition = contentStartY
+        rightYPosition = drawSection(
+            context: context,
+            title: "BLOCKCHAIN ATTESTATION",
+            items: buildBlockchainItems(item),
+            startY: rightYPosition,
+            x: leftColumnX + columnWidth + 30,
+            width: columnWidth,
+            pageRect: pageRect
+        )
+        
+        yPosition = max(yPosition, rightYPosition) + 10
+        
+        // === HASH DISPLAY (Full Width) ===
+        yPosition = drawHashSection(context: context, hash: item.hashHex, y: yPosition, pageRect: pageRect, margin: innerMargin)
+        
+        // === QR CODE SECTION ===
+        yPosition += 5
+        drawQRSection(context: context, item: item, y: yPosition, pageRect: pageRect, margin: innerMargin)
+        
+        // === FOOTER ===
+        drawFooter(context: context, pageRect: pageRect, margin: margin)
+    }
+    
+    // MARK: - Border & Ornaments
+    
+    private func drawCertificateBorder(context: CGContext, pageRect: CGRect, margin: CGFloat) {
+        // Outer border
+        context.setStrokeColor(borderGold.cgColor)
+        context.setLineWidth(3)
+        context.stroke(pageRect.insetBy(dx: margin - 5, dy: margin - 5))
+        
+        // Middle border
+        context.setStrokeColor(bitcoinOrange.cgColor)
+        context.setLineWidth(1)
+        context.stroke(pageRect.insetBy(dx: margin + 5, dy: margin + 5))
+        
+        // Inner border
+        context.setStrokeColor(borderGold.withAlphaComponent(0.5).cgColor)
+        context.setLineWidth(0.5)
+        context.stroke(pageRect.insetBy(dx: margin + 10, dy: margin + 10))
+    }
+    
+    private func drawCornerOrnaments(context: CGContext, pageRect: CGRect, margin: CGFloat) {
+        let ornamentSize: CGFloat = 15
+        let inset = margin + 2
+        
+        context.setStrokeColor(borderGold.cgColor)
+        context.setLineWidth(2)
+        
+        // Top-left
+        context.move(to: CGPoint(x: inset, y: pageRect.height - inset - ornamentSize))
+        context.addLine(to: CGPoint(x: inset, y: pageRect.height - inset))
+        context.addLine(to: CGPoint(x: inset + ornamentSize, y: pageRect.height - inset))
+        context.strokePath()
+        
+        // Top-right
+        context.move(to: CGPoint(x: pageRect.width - inset - ornamentSize, y: pageRect.height - inset))
+        context.addLine(to: CGPoint(x: pageRect.width - inset, y: pageRect.height - inset))
+        context.addLine(to: CGPoint(x: pageRect.width - inset, y: pageRect.height - inset - ornamentSize))
+        context.strokePath()
+        
+        // Bottom-left
+        context.move(to: CGPoint(x: inset, y: inset + ornamentSize))
+        context.addLine(to: CGPoint(x: inset, y: inset))
+        context.addLine(to: CGPoint(x: inset + ornamentSize, y: inset))
+        context.strokePath()
+        
+        // Bottom-right
+        context.move(to: CGPoint(x: pageRect.width - inset - ornamentSize, y: inset))
+        context.addLine(to: CGPoint(x: pageRect.width - inset, y: inset))
+        context.addLine(to: CGPoint(x: pageRect.width - inset, y: inset + ornamentSize))
+        context.strokePath()
+    }
+    
+    private func drawBitcoinSeal(context: CGContext, at point: CGPoint, size: CGFloat) {
+        let centerX = point.x + size / 2
+        let centerY = point.y + size / 2
+        
+        // Outer circle
+        context.setFillColor(bitcoinOrange.cgColor)
+        context.fillEllipse(in: CGRect(x: point.x, y: point.y, width: size, height: size))
+        
+        // Inner circle
+        let innerSize = size - 8
+        let innerOffset = (size - innerSize) / 2
+        context.setStrokeColor(UIColor.white.cgColor)
+        context.setLineWidth(2)
+        context.strokeEllipse(in: CGRect(x: point.x + innerOffset, y: point.y + innerOffset, width: innerSize, height: innerSize))
+        
+        // Bitcoin "₿" symbol
+        let btcFont = UIFont.systemFont(ofSize: size * 0.45, weight: .bold)
+        let btcAttr: [NSAttributedString.Key: Any] = [
+            .font: btcFont,
+            .foregroundColor: UIColor.white
+        ]
+        let btcText = "₿"
+        let btcSize = btcText.size(withAttributes: btcAttr)
+        btcText.draw(at: CGPoint(x: centerX - btcSize.width / 2, y: centerY - btcSize.height / 2), withAttributes: btcAttr)
+    }
+    
+    private func drawDecorativeLine(context: CGContext, y: CGFloat, pageRect: CGRect, margin: CGFloat) {
+        let centerX = pageRect.width / 2
+        let lineLength: CGFloat = 80
+        
+        context.setStrokeColor(borderGold.cgColor)
+        context.setLineWidth(1)
+        
+        // Left line
+        context.move(to: CGPoint(x: margin, y: y))
+        context.addLine(to: CGPoint(x: centerX - lineLength / 2 - 10, y: y))
+        context.strokePath()
+        
+        // Right line
+        context.move(to: CGPoint(x: centerX + lineLength / 2 + 10, y: y))
+        context.addLine(to: CGPoint(x: pageRect.width - margin, y: y))
+        context.strokePath()
+        
+        // Center diamond
+        let diamondSize: CGFloat = 6
+        context.move(to: CGPoint(x: centerX, y: y + diamondSize))
+        context.addLine(to: CGPoint(x: centerX + diamondSize, y: y))
+        context.addLine(to: CGPoint(x: centerX, y: y - diamondSize))
+        context.addLine(to: CGPoint(x: centerX - diamondSize, y: y))
+        context.closePath()
+        context.setFillColor(bitcoinOrange.cgColor)
+        context.fillPath()
+    }
+    
+    // MARK: - Status Badge
+    
+    private func drawStatusBadge(context: CGContext, status: DataStampStatus, centerX: CGFloat, y: CGFloat) {
+        let badgeHeight: CGFloat = 28
+        let badgeWidth: CGFloat = 180
+        let badgeX = centerX - badgeWidth / 2
+        
+        let (badgeColor, badgeText, icon): (UIColor, String, String)
+        
+        switch status {
         case .confirmed, .verified:
-            badgeColor = UIColor(red: 0.2, green: 0.7, blue: 0.3, alpha: 1.0)
-            badgeText = "✓ VERIFIED"
+            badgeColor = UIColor(red: 34/255, green: 139/255, blue: 34/255, alpha: 1.0)
+            badgeText = "BLOCKCHAIN VERIFIED"
+            icon = "✓"
         case .submitted:
-            badgeColor = UIColor(red: 0.95, green: 0.6, blue: 0.1, alpha: 1.0)
-            badgeText = "⏳ PENDING"
+            badgeColor = bitcoinOrange
+            badgeText = "PENDING CONFIRMATION"
+            icon = "◐"
         case .pending:
             badgeColor = UIColor.gray
-            badgeText = "○ DRAFT"
+            badgeText = "DRAFT"
+            icon = "○"
         case .failed:
-            badgeColor = UIColor.red
-            badgeText = "✗ FAILED"
+            badgeColor = UIColor(red: 180/255, green: 0, blue: 0, alpha: 1.0)
+            badgeText = "FAILED"
+            icon = "✗"
         }
         
-        let badgePath = UIBezierPath(roundedRect: CGRect(x: badgeX, y: badgeY, width: badgeWidth, height: badgeHeight), cornerRadius: badgeHeight / 2)
+        // Badge background
+        let badgePath = UIBezierPath(roundedRect: CGRect(x: badgeX, y: y, width: badgeWidth, height: badgeHeight), cornerRadius: badgeHeight / 2)
         context.setFillColor(badgeColor.cgColor)
         context.addPath(badgePath.cgPath)
         context.fillPath()
         
-        let badgeFont = UIFont.systemFont(ofSize: 14, weight: .bold)
+        // Badge border
+        context.setStrokeColor(badgeColor.withAlphaComponent(0.5).cgColor)
+        context.setLineWidth(1)
+        context.addPath(UIBezierPath(roundedRect: CGRect(x: badgeX - 2, y: y - 2, width: badgeWidth + 4, height: badgeHeight + 4), cornerRadius: (badgeHeight + 4) / 2).cgPath)
+        context.strokePath()
+        
+        // Badge text
+        let badgeFont = UIFont.systemFont(ofSize: 11, weight: .bold)
+        let fullText = "\(icon)  \(badgeText)"
         let badgeAttr: [NSAttributedString.Key: Any] = [
             .font: badgeFont,
-            .foregroundColor: UIColor.white
+            .foregroundColor: UIColor.white,
+            .kern: 1.0
         ]
-        let badgeTextSize = badgeText.size(withAttributes: badgeAttr)
-        let badgeTextX = badgeX + (badgeWidth - badgeTextSize.width) / 2
-        let badgeTextY = badgeY + (badgeHeight - badgeTextSize.height) / 2
-        badgeText.draw(at: CGPoint(x: badgeTextX, y: badgeTextY), withAttributes: badgeAttr)
-        
-        yPosition += badgeHeight + 30
-        
-        // === CONTENT PREVIEW ===
-        if let image = contentImage {
-            let maxImageHeight: CGFloat = 120
-            let maxImageWidth: CGFloat = contentWidth - 100
-            let aspectRatio = image.size.width / image.size.height
-            
-            var imageWidth = maxImageWidth
-            var imageHeight = imageWidth / aspectRatio
-            
-            if imageHeight > maxImageHeight {
-                imageHeight = maxImageHeight
-                imageWidth = imageHeight * aspectRatio
-            }
-            
-            let imageX = (pageRect.width - imageWidth) / 2
-            let imageY = pageRect.height - yPosition - imageHeight
-            
-            context.setStrokeColor(borderColor.cgColor)
-            context.setLineWidth(1)
-            context.stroke(CGRect(x: imageX - 2, y: imageY - 2, width: imageWidth + 4, height: imageHeight + 4))
-            
-            image.draw(in: CGRect(x: imageX, y: imageY, width: imageWidth, height: imageHeight))
-            
-            yPosition += imageHeight + 25
-        } else if let textContent = item.textContent, !textContent.isEmpty {
-            let textBoxHeight: CGFloat = 60
-            let textBoxX = margin + 20
-            let textBoxY = pageRect.height - yPosition - textBoxHeight
-            let textBoxWidth = contentWidth - 40
-            
-            context.setStrokeColor(borderColor.cgColor)
-            context.setLineWidth(1)
-            context.stroke(CGRect(x: textBoxX, y: textBoxY, width: textBoxWidth, height: textBoxHeight))
-            
-            let contentFont = UIFont.systemFont(ofSize: 11, weight: .regular)
-            let truncatedText = String(textContent.prefix(200)) + (textContent.count > 200 ? "..." : "")
-            let contentAttr: [NSAttributedString.Key: Any] = [
-                .font: contentFont,
-                .foregroundColor: textColor
-            ]
-            
-            let textRect = CGRect(x: textBoxX + 10, y: textBoxY + 8, width: textBoxWidth - 20, height: textBoxHeight - 16)
-            truncatedText.draw(in: textRect, withAttributes: contentAttr)
-            
-            yPosition += textBoxHeight + 25
-        }
-        
-        // === DOCUMENT INFORMATION SECTION ===
-        yPosition = drawSectionHeader("Document Information", yPosition: yPosition, pageRect: pageRect, margin: margin, color: primaryColor)
+        let textSize = fullText.size(withAttributes: badgeAttr)
+        fullText.draw(at: CGPoint(x: centerX - textSize.width / 2, y: y + (badgeHeight - textSize.height) / 2), withAttributes: badgeAttr)
+    }
+    
+    // MARK: - Sections
+    
+    private func buildDocumentItems(_ item: DataStampItemSnapshot) -> [(String, String)] {
+        var items: [(String, String)] = []
         
         if let title = item.title, !title.isEmpty {
-            yPosition = drawDetailRow("Title:", title, yPosition: yPosition, pageRect: pageRect, margin: margin)
+            items.append(("Title", title))
         }
         
         let typeString: String
         switch item.contentType {
         case .text: typeString = "Text Document"
         case .photo: typeString = "Photograph"
-        case .file: typeString = "File (\(item.contentFileName ?? "unknown"))"
+        case .file: typeString = "File"
         }
-        yPosition = drawDetailRow("Type:", typeString, yPosition: yPosition, pageRect: pageRect, margin: margin)
+        items.append(("Type", typeString))
+        
+        if let fileName = item.contentFileName {
+            items.append(("Filename", fileName))
+        }
         
         let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .long
-        dateFormatter.timeStyle = .medium
-        yPosition = drawDetailRow("Created:", dateFormatter.string(from: item.createdAt), yPosition: yPosition, pageRect: pageRect, margin: margin)
-        
-        yPosition += 15
-        
-        // === CRYPTOGRAPHIC PROOF SECTION ===
-        yPosition = drawSectionHeader("Cryptographic Proof", yPosition: yPosition, pageRect: pageRect, margin: margin, color: primaryColor)
-        
-        yPosition = drawDetailRow("SHA-256 Hash:", "", yPosition: yPosition, pageRect: pageRect, margin: margin)
-        yPosition = drawMonospaceText(item.hashHex, yPosition: yPosition, pageRect: pageRect, margin: margin)
-        
-        if let calendarUrl = item.calendarUrl {
-            yPosition = drawDetailRow("Calendar Server:", calendarUrl, yPosition: yPosition, pageRect: pageRect, margin: margin)
-        }
+        dateFormatter.dateFormat = "d MMM yyyy, HH:mm:ss"
+        items.append(("Created", dateFormatter.string(from: item.createdAt)))
         
         if let submittedAt = item.submittedAt {
-            yPosition = drawDetailRow("Submitted:", dateFormatter.string(from: submittedAt), yPosition: yPosition, pageRect: pageRect, margin: margin)
+            items.append(("Submitted", dateFormatter.string(from: submittedAt)))
         }
         
-        yPosition += 15
+        return items
+    }
+    
+    private func buildBlockchainItems(_ item: DataStampItemSnapshot) -> [(String, String)] {
+        var items: [(String, String)] = []
         
-        // === BITCOIN ATTESTATION SECTION ===
-        if item.status == .confirmed || item.status == .verified {
-            yPosition = drawSectionHeader("Bitcoin Blockchain Attestation", yPosition: yPosition, pageRect: pageRect, margin: margin, color: primaryColor)
-            
-            if let blockHeight = item.bitcoinBlockHeight {
-                yPosition = drawDetailRow("Block Height:", "#\(blockHeight)", yPosition: yPosition, pageRect: pageRect, margin: margin)
-            }
-            
-            if let blockTime = item.bitcoinBlockTime {
-                yPosition = drawDetailRow("Block Time:", dateFormatter.string(from: blockTime), yPosition: yPosition, pageRect: pageRect, margin: margin)
-            }
-            
-            if let txId = item.bitcoinTxId, !txId.isEmpty {
-                yPosition = drawDetailRow("Transaction:", "", yPosition: yPosition, pageRect: pageRect, margin: margin)
-                yPosition = drawMonospaceText(txId, yPosition: yPosition, pageRect: pageRect, margin: margin)
+        if let blockHeight = item.bitcoinBlockHeight {
+            items.append(("Block Height", "#\(formatNumber(blockHeight))"))
+        }
+        
+        if let blockTime = item.bitcoinBlockTime {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "d MMM yyyy, HH:mm"
+            items.append(("Block Time", dateFormatter.string(from: blockTime)))
+        }
+        
+        if let txId = item.bitcoinTxId, !txId.isEmpty {
+            let shortTx = "\(txId.prefix(16))...\(txId.suffix(8))"
+            items.append(("Transaction", shortTx))
+        }
+        
+        if let calendarUrl = item.calendarUrl {
+            let calendarName = calendarUrl
+                .replacingOccurrences(of: "https://", with: "")
+                .replacingOccurrences(of: ".btc.calendar.opentimestamps.org", with: "")
+                .replacingOccurrences(of: ".calendar.eternitywall.com", with: "")
+                .capitalized
+            items.append(("Calendar", calendarName))
+        }
+        
+        // Confirmations estimate (blocks since confirmation)
+        if let blockHeight = item.bitcoinBlockHeight {
+            // Approximate current block (rough estimate: 6 blocks/hour since 2009)
+            let estimatedCurrentBlock = 880000 // Update periodically
+            let confirmations = max(0, estimatedCurrentBlock - blockHeight)
+            if confirmations > 0 {
+                items.append(("Confirmations", "~\(formatNumber(confirmations))+"))
             }
         }
         
-        // === QR CODE (Top Right) ===
-        if let qrImage = generateQRCode(for: item) {
-            let qrSize: CGFloat = 80
-            let qrX = pageRect.width - margin - qrSize
-            let qrY = pageRect.height - margin - 30 - qrSize // Below top border
-            
-            qrImage.draw(in: CGRect(x: qrX, y: qrY, width: qrSize, height: qrSize))
-            
-            let qrLabelFont = UIFont.systemFont(ofSize: 7, weight: .regular)
-            let qrLabel = "Verify on blockchain"
-            let qrLabelAttr: [NSAttributedString.Key: Any] = [
-                .font: qrLabelFont,
-                .foregroundColor: subtitleColor
-            ]
-            let qrLabelSize = qrLabel.size(withAttributes: qrLabelAttr)
-            qrLabel.draw(at: CGPoint(x: qrX + (qrSize - qrLabelSize.width) / 2, y: qrY - qrLabelSize.height - 2), withAttributes: qrLabelAttr)
-        }
+        return items
+    }
+    
+    private func drawSection(
+        context: CGContext,
+        title: String,
+        items: [(String, String)],
+        startY: CGFloat,
+        x: CGFloat,
+        width: CGFloat,
+        pageRect: CGRect
+    ) -> CGFloat {
+        var yPosition = startY
         
-        // === FOOTER (Bottom) ===
-        let footerY: CGFloat = margin + 30
+        // Section title
+        let titleFont = UIFont.systemFont(ofSize: 9, weight: .bold)
+        let titleAttr: [NSAttributedString.Key: Any] = [
+            .font: titleFont,
+            .foregroundColor: bitcoinOrange,
+            .kern: 1.5
+        ]
+        let titleY = pageRect.height - yPosition - 12
+        title.draw(at: CGPoint(x: x, y: titleY), withAttributes: titleAttr)
         
-        // Bottom border
-        context.setStrokeColor(primaryColor.cgColor)
-        context.setLineWidth(2)
-        context.move(to: CGPoint(x: margin, y: footerY + 20))
-        context.addLine(to: CGPoint(x: pageRect.width - margin, y: footerY + 20))
+        // Underline
+        context.setStrokeColor(bitcoinOrange.withAlphaComponent(0.3).cgColor)
+        context.setLineWidth(1)
+        context.move(to: CGPoint(x: x, y: titleY - 3))
+        context.addLine(to: CGPoint(x: x + width, y: titleY - 3))
         context.strokePath()
         
-        // Footer text
-        let footerFont = UIFont.systemFont(ofSize: 8, weight: .regular)
-        let footerText = "This certificate was generated by DataStamp app. Verify authenticity using the .ots proof file at opentimestamps.org"
-        let footerAttr: [NSAttributedString.Key: Any] = [
-            .font: footerFont,
-            .foregroundColor: subtitleColor
-        ]
-        footerText.draw(at: CGPoint(x: margin, y: footerY), withAttributes: footerAttr)
+        yPosition += 22
         
-        // DataStamp logo
-        let logoFont = UIFont.systemFont(ofSize: 9, weight: .bold)
-        let logoText = "DATASTAMP"
-        let logoAttr: [NSAttributedString.Key: Any] = [
-            .font: logoFont,
-            .foregroundColor: primaryColor
-        ]
-        let logoSize = logoText.size(withAttributes: logoAttr)
-        logoText.draw(at: CGPoint(x: pageRect.width - margin - logoSize.width, y: footerY), withAttributes: logoAttr)
-    }
-    
-    private func drawSectionHeader(
-        _ text: String,
-        yPosition: CGFloat,
-        pageRect: CGRect,
-        margin: CGFloat,
-        color: UIColor
-    ) -> CGFloat {
-        let font = UIFont.systemFont(ofSize: 13, weight: .semibold)
-        let attr: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: color
-        ]
-        let size = text.size(withAttributes: attr)
-        let y = pageRect.height - yPosition - size.height
+        // Items
+        let labelFont = UIFont.systemFont(ofSize: 9, weight: .medium)
+        let valueFont = UIFont.systemFont(ofSize: 9, weight: .regular)
         
-        text.draw(at: CGPoint(x: margin, y: y), withAttributes: attr)
-        
-        return yPosition + size.height + 12
-    }
-    
-    private func drawDetailRow(
-        _ label: String,
-        _ value: String,
-        yPosition: CGFloat,
-        pageRect: CGRect,
-        margin: CGFloat
-    ) -> CGFloat {
-        let labelFont = UIFont.systemFont(ofSize: 10, weight: .medium)
-        let valueFont = UIFont.systemFont(ofSize: 10, weight: .regular)
-        
-        let labelAttr: [NSAttributedString.Key: Any] = [
-            .font: labelFont,
-            .foregroundColor: UIColor.darkGray
-        ]
-        let valueAttr: [NSAttributedString.Key: Any] = [
-            .font: valueFont,
-            .foregroundColor: UIColor.black
-        ]
-        
-        let labelSize = label.size(withAttributes: labelAttr)
-        let y = pageRect.height - yPosition - labelSize.height
-        
-        label.draw(at: CGPoint(x: margin + 10, y: y), withAttributes: labelAttr)
-        
-        if !value.isEmpty {
-            value.draw(at: CGPoint(x: margin + 110, y: y), withAttributes: valueAttr)
+        for (label, value) in items {
+            let labelAttr: [NSAttributedString.Key: Any] = [
+                .font: labelFont,
+                .foregroundColor: mediumText
+            ]
+            let valueAttr: [NSAttributedString.Key: Any] = [
+                .font: valueFont,
+                .foregroundColor: darkText
+            ]
+            
+            let itemY = pageRect.height - yPosition - 12
+            label.draw(at: CGPoint(x: x, y: itemY), withAttributes: labelAttr)
+            
+            let valueX = x + 75
+            let maxValueWidth = width - 75
+            let valueRect = CGRect(x: valueX, y: itemY, width: maxValueWidth, height: 14)
+            value.draw(in: valueRect, withAttributes: valueAttr)
+            
+            yPosition += 16
         }
         
-        return yPosition + labelSize.height + 6
+        return yPosition
     }
     
-    private func drawMonospaceText(
-        _ text: String,
-        yPosition: CGFloat,
-        pageRect: CGRect,
-        margin: CGFloat
-    ) -> CGFloat {
-        let font = UIFont.monospacedSystemFont(ofSize: 7, weight: .regular)
-        let attr: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: UIColor.black
-        ]
+    // MARK: - Hash Section
+    
+    private func drawHashSection(context: CGContext, hash: String, y: CGFloat, pageRect: CGRect, margin: CGFloat) -> CGFloat {
+        var yPosition = y
         
-        let size = text.size(withAttributes: attr)
-        let y = pageRect.height - yPosition - size.height
+        // Title
+        let titleFont = UIFont.systemFont(ofSize: 9, weight: .bold)
+        let titleAttr: [NSAttributedString.Key: Any] = [
+            .font: titleFont,
+            .foregroundColor: bitcoinOrange,
+            .kern: 1.5
+        ]
+        let title = "SHA-256 DOCUMENT FINGERPRINT"
+        let titleY = pageRect.height - yPosition - 12
+        title.draw(at: CGPoint(x: margin, y: titleY), withAttributes: titleAttr)
+        
+        yPosition += 20
+        
+        // Hash box
+        let boxHeight: CGFloat = 32
+        let boxY = pageRect.height - yPosition - boxHeight
+        let boxWidth = pageRect.width - margin * 2
         
         // Background
-        let bgRect = CGRect(x: margin + 10, y: y - 2, width: size.width + 10, height: size.height + 4)
-        UIColor(white: 0.95, alpha: 1.0).setFill()
-        UIBezierPath(roundedRect: bgRect, cornerRadius: 3).fill()
+        let boxPath = UIBezierPath(roundedRect: CGRect(x: margin, y: boxY, width: boxWidth, height: boxHeight), cornerRadius: 4)
+        context.setFillColor(UIColor(white: 0.97, alpha: 1.0).cgColor)
+        context.addPath(boxPath.cgPath)
+        context.fillPath()
         
-        text.draw(at: CGPoint(x: margin + 15, y: y), withAttributes: attr)
+        // Border
+        context.setStrokeColor(borderGold.withAlphaComponent(0.3).cgColor)
+        context.setLineWidth(1)
+        context.addPath(boxPath.cgPath)
+        context.strokePath()
         
-        return yPosition + size.height + 10
+        // Hash text (split in two lines for readability)
+        let hashFont = UIFont.monospacedSystemFont(ofSize: 9, weight: .medium)
+        let hashAttr: [NSAttributedString.Key: Any] = [
+            .font: hashFont,
+            .foregroundColor: darkText,
+            .kern: 0.5
+        ]
+        
+        let line1 = String(hash.prefix(32))
+        let line2 = String(hash.suffix(32))
+        
+        line1.draw(at: CGPoint(x: margin + 10, y: boxY + 5), withAttributes: hashAttr)
+        line2.draw(at: CGPoint(x: margin + 10, y: boxY + 17), withAttributes: hashAttr)
+        
+        return yPosition + boxHeight + 5
     }
+    
+    // MARK: - QR Section
+    
+    private func drawQRSection(context: CGContext, item: DataStampItemSnapshot, y: CGFloat, pageRect: CGRect, margin: CGFloat) {
+        let qrSize: CGFloat = 90
+        let sectionY = pageRect.height - y - qrSize - 40
+        
+        // Generate QR
+        guard let qrImage = generateQRCode(for: item) else { return }
+        
+        // QR code with border
+        let qrX = margin
+        context.setStrokeColor(borderGold.cgColor)
+        context.setLineWidth(2)
+        context.stroke(CGRect(x: qrX - 3, y: sectionY - 3, width: qrSize + 6, height: qrSize + 6))
+        
+        qrImage.draw(in: CGRect(x: qrX, y: sectionY, width: qrSize, height: qrSize))
+        
+        // Verification text
+        let textX = qrX + qrSize + 15
+        let textWidth = pageRect.width - textX - margin
+        
+        let verifyTitleFont = UIFont.systemFont(ofSize: 10, weight: .semibold)
+        let verifyTitleAttr: [NSAttributedString.Key: Any] = [
+            .font: verifyTitleFont,
+            .foregroundColor: darkText
+        ]
+        "Verify This Certificate".draw(at: CGPoint(x: textX, y: sectionY + qrSize - 14), withAttributes: verifyTitleAttr)
+        
+        let instructionFont = UIFont.systemFont(ofSize: 8, weight: .regular)
+        let instructionAttr: [NSAttributedString.Key: Any] = [
+            .font: instructionFont,
+            .foregroundColor: mediumText
+        ]
+        
+        let instructions = """
+        1. Scan QR code to view blockchain transaction
+        2. Compare document hash with on-chain data
+        3. Verify using opentimestamps.org with .ots file
+        """
+        
+        let instructionRect = CGRect(x: textX, y: sectionY + 5, width: textWidth, height: qrSize - 25)
+        instructions.draw(in: instructionRect, withAttributes: instructionAttr)
+        
+        // URL
+        let urlFont = UIFont.monospacedSystemFont(ofSize: 7, weight: .regular)
+        let urlAttr: [NSAttributedString.Key: Any] = [
+            .font: urlFont,
+            .foregroundColor: bitcoinOrange
+        ]
+        
+        let url: String
+        if let txId = item.bitcoinTxId, !txId.isEmpty {
+            url = "blockstream.info/tx/\(txId.prefix(20))..."
+        } else {
+            url = "opentimestamps.org"
+        }
+        url.draw(at: CGPoint(x: textX, y: sectionY - 5), withAttributes: urlAttr)
+    }
+    
+    // MARK: - Footer
+    
+    private func drawFooter(context: CGContext, pageRect: CGRect, margin: CGFloat) {
+        let footerY: CGFloat = margin + 15
+        
+        // Decorative line
+        drawDecorativeLine(context: context, y: footerY + 25, pageRect: pageRect, margin: margin + 30)
+        
+        // Legal text
+        let legalFont = UIFont.systemFont(ofSize: 7, weight: .regular)
+        let legalAttr: [NSAttributedString.Key: Any] = [
+            .font: legalFont,
+            .foregroundColor: lightText
+        ]
+        
+        let legalText = "This certificate attests that the referenced document existed at the time indicated by the Bitcoin blockchain timestamp. The cryptographic proof is independently verifiable using the OpenTimestamps protocol. This certificate does not verify the content, accuracy, or legal validity of the document itself."
+        
+        let legalRect = CGRect(x: margin + 15, y: footerY - 8, width: pageRect.width - margin * 2 - 100, height: 30)
+        legalText.draw(in: legalRect, withAttributes: legalAttr)
+        
+        // DataStamp branding
+        let brandFont = UIFont.systemFont(ofSize: 10, weight: .bold)
+        let brandAttr: [NSAttributedString.Key: Any] = [
+            .font: brandFont,
+            .foregroundColor: bitcoinOrange,
+            .kern: 1.0
+        ]
+        let brand = "DATASTAMP"
+        let brandSize = brand.size(withAttributes: brandAttr)
+        brand.draw(at: CGPoint(x: pageRect.width - margin - brandSize.width - 5, y: footerY + 5), withAttributes: brandAttr)
+        
+        let taglineFont = UIFont.systemFont(ofSize: 6, weight: .regular)
+        let taglineAttr: [NSAttributedString.Key: Any] = [
+            .font: taglineFont,
+            .foregroundColor: lightText
+        ]
+        let tagline = "Powered by Bitcoin"
+        let taglineSize = tagline.size(withAttributes: taglineAttr)
+        tagline.draw(at: CGPoint(x: pageRect.width - margin - taglineSize.width - 5, y: footerY - 5), withAttributes: taglineAttr)
+    }
+    
+    // MARK: - Helpers
     
     private func generateQRCode(for item: DataStampItemSnapshot) -> UIImage? {
         var urlString: String
@@ -374,16 +627,23 @@ actor PDFExportService {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = data
-        filter.correctionLevel = "M"
+        filter.correctionLevel = "H" // High correction for better scanning
         
         guard let outputImage = filter.outputImage else { return nil }
         
-        let scale = 8.0
+        let scale = 10.0
         let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         
         guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
         
         return UIImage(cgImage: cgImage)
+    }
+    
+    private func formatNumber(_ number: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
 }
 
