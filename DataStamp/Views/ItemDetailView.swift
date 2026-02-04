@@ -437,28 +437,6 @@ struct ItemDetailView: View {
     private var actionsSection: some View {
         VStack(spacing: 12) {
             // Verify button (if confirmed)
-            if item.status == .confirmed {
-                Button {
-                    Task { await verify() }
-                } label: {
-                    HStack {
-                        if isVerifying {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Image(systemName: "checkmark.shield")
-                        }
-                        Text("Verify Proof")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .disabled(isVerifying)
-            }
-            
             // Refresh button (if pending/submitted)
             if item.status == .submitted {
                 Button {
