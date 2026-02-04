@@ -58,6 +58,7 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                    .accessibilityLabel(A11yLabel.settings)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {

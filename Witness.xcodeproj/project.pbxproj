@@ -22,6 +22,7 @@
 		98E1AE5F489711E341E4E3ED /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F617406DBFE116D7A731954 /* ShareViewController.swift */; };
 		99ED464613173EB701702A30 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B718979A16D37546765FA04E /* StorageService.swift */; };
 		BECF8D9D1023ED98383D8F41 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB666369082B1950BA87A75 /* NotificationService.swift */; };
+		C5081408615C9BA2BBE3738D /* AccessibilityModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E907537836FFA96AF10341B9 /* AccessibilityModifiers.swift */; };
 		C81686F3B2F97F1526B39305 /* CreateTimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58B10B38FF73E83504DE534 /* CreateTimestampView.swift */; };
 		D93778FA0F954653723E972B /* WitnessWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987E90149057B22EC72FD0B2 /* WitnessWidget.swift */; };
 		E4A0849CE4B1132427434FED /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E4E34287D3F0D856FF79C1 /* OnboardingView.swift */; };
@@ -86,6 +87,7 @@
 		E3E4E34287D3F0D856FF79C1 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		E47E05C83B151464DE5A7793 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E58B10B38FF73E83504DE534 /* CreateTimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTimestampView.swift; sourceTree = "<group>"; };
+		E907537836FFA96AF10341B9 /* AccessibilityModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityModifiers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -158,6 +160,7 @@
 		8F44BBA38EBCAF55AA9A73A9 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				E907537836FFA96AF10341B9 /* AccessibilityModifiers.swift */,
 				490ED391B95F7A4C01B9FBA1 /* HapticManager.swift */,
 			);
 			path = Utilities;
@@ -335,6 +338,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5081408615C9BA2BBE3738D /* AccessibilityModifiers.swift in Sources */,
 				018621C0CDF793E091D459D0 /* ContentView.swift in Sources */,
 				C81686F3B2F97F1526B39305 /* CreateTimestampView.swift in Sources */,
 				39C9FF172187DDFD18670A5A /* HapticManager.swift in Sources */,
