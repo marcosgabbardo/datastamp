@@ -70,7 +70,7 @@ struct SettingsView: View {
                         Text("Sync error: \(error.localizedDescription)")
                             .foregroundStyle(.red)
                     } else {
-                        Text("Sync your timestamps across all your devices. Only metadata and proofs are synced - your original files stay on device.")
+                        Text("Sync your timestamps, proofs, and files across all your devices via iCloud.")
                     }
                 }
                 
@@ -148,6 +148,7 @@ struct SettingsView: View {
     
     private var syncStateColor: Color {
         switch syncService.syncState {
+        case .checking: return .orange
         case .idle: return .green
         case .syncing: return .blue
         case .error: return .red

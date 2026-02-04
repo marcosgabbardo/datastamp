@@ -7,6 +7,7 @@ struct WitnessApp: App {
     @StateObject private var syncService = CloudKitSyncService()
     
     let container: ModelContainer
+    let storageService = StorageService()
     
     init() {
         do {
@@ -33,7 +34,10 @@ struct WitnessApp: App {
                 .environmentObject(syncService)
                 .task {
                     await setupNotifications()
-                    await syncService.configure(with: container.mainContext)
+                    await syncService.configure(with: container.mainContext, storage: storageService)
+                    
+                    // Initial sync
+                    await syncService.sync()
                 }
         }
         .modelContainer(container)
