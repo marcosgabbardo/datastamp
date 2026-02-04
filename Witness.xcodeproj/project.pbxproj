@@ -32,6 +32,7 @@
 		D93778FA0F954653723E972B /* WitnessWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987E90149057B22EC72FD0B2 /* WitnessWidget.swift */; };
 		DF53981D099605F0CE249349 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8B683A4D48EDCFA31E44A2E7 /* Assets.xcassets */; };
 		E4A0849CE4B1132427434FED /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E4E34287D3F0D856FF79C1 /* OnboardingView.swift */; };
+		EC00C2D132B7C1330D22A5A9 /* WitnessIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38AFC407550EBBEA64DC97AB /* WitnessIntents.swift */; };
 		F739721BA618F61D50A0CBE3 /* VerifyExternalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D1932CF3FF2280503CEF83C /* VerifyExternalView.swift */; };
 /* End PBXBuildFile section */
 
@@ -86,6 +87,7 @@
 		3383998352DAB47D6862D2EB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		366772C19740FCBA0405BC27 /* WitnessShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WitnessShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3867F22ADF96373A6D01F275 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		38AFC407550EBBEA64DC97AB /* WitnessIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WitnessIntents.swift; sourceTree = "<group>"; };
 		3D1932CF3FF2280503CEF83C /* VerifyExternalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyExternalView.swift; sourceTree = "<group>"; };
 		3DBC9F6759E8BD6A84650C43 /* en.lproj */ = {isa = PBXFileReference; path = en.lproj; sourceTree = "<group>"; };
 		3F617406DBFE116D7A731954 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				278598D0A1D2422EDF452F80 /* Witness.entitlements */,
 				1F8997FA9760B115038B506E /* WitnessApp.swift */,
 				99444A94FC4A8D4F1C6899E2 /* Extensions */,
+				6630EA8106EA6B474E5669F8 /* Intents */,
 				2A470CC0D3ECFA9F187E08F0 /* Models */,
 				45F3D8B014BC536EA6D075A1 /* Resources */,
 				56239505920DC61A85F4CEF5 /* Services */,
@@ -177,6 +180,14 @@
 				59A64FD5EC688EB2BBB87639 /* Views */,
 			);
 			path = Witness;
+			sourceTree = "<group>";
+		};
+		6630EA8106EA6B474E5669F8 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				38AFC407550EBBEA64DC97AB /* WitnessIntents.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 		832A716E3AE2AA71F950BBAB /* WitnessTests */ = {
@@ -429,6 +440,7 @@
 				F739721BA618F61D50A0CBE3 /* VerifyExternalView.swift in Sources */,
 				93B89B59278E005C447BF7DD /* WidgetService.swift in Sources */,
 				93522736B95291B0F8DC9DA2 /* WitnessApp.swift in Sources */,
+				EC00C2D132B7C1330D22A5A9 /* WitnessIntents.swift in Sources */,
 				10D5570A5837BBF777CF5032 /* WitnessItem.swift in Sources */,
 				54032541E9FA2BBB599C54CB /* WitnessManager.swift in Sources */,
 			);

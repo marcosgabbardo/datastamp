@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var showingVerify = false
     @State private var selectedItem: WitnessItem?
     @State private var selectedFilter: ItemFilter = .all
+    @State private var searchText = ""
     
     enum ItemFilter: String, CaseIterable {
         case all = "All"
@@ -116,6 +117,7 @@ struct ContentView: View {
                     showingOnboarding = true
                 }
             }
+            .searchable(text: $searchText, prompt: "Search timestamps...")
             .task {
                 // Check for upgrades on launch - safely
                 await witnessManager.checkPendingUpgrades(items: items, context: modelContext)
@@ -173,14 +175,47 @@ struct ContentView: View {
     }
     
     private var filteredItems: [WitnessItem] {
+        var result: [WitnessItem]
+        
+        // Apply status filter
         switch selectedFilter {
         case .all:
-            return items
+            result = items
         case .pending:
-            return items.filter { $0.status == .pending || $0.status == .submitted }
+            result = items.filter { $0.status == .pending || $0.status == .submitted }
         case .confirmed:
-            return items.filter { $0.status == .confirmed || $0.status == .verified }
+            result = items.filter { $0.status == .confirmed || $0.status == .verified }
         }
+        
+        // Apply search filter
+        if !searchText.isEmpty {
+            let lowercasedSearch = searchText.lowercased()
+            result = result.filter { item in
+                // Search in title
+                if let title = item.title, title.lowercased().contains(lowercasedSearch) {
+                    return true
+                }
+                // Search in text content
+                if let text = item.textContent, text.lowercased().contains(lowercasedSearch) {
+                    return true
+                }
+                // Search in filename
+                if let filename = item.contentFileName, filename.lowercased().contains(lowercasedSearch) {
+                    return true
+                }
+                // Search in notes
+                if let notes = item.notes, notes.lowercased().contains(lowercasedSearch) {
+                    return true
+                }
+                // Search in hash (partial match)
+                if item.hashHex.lowercased().contains(lowercasedSearch) {
+                    return true
+                }
+                return false
+            }
+        }
+        
+        return result
     }
     
     private var createButton: some View {
