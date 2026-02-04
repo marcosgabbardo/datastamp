@@ -203,7 +203,7 @@ final class WitnessManager {
                 try await storageService.saveProof(upgradedOts, for: item.id)
                 try context.save()
                 
-                // Send notification
+                // Send notification and haptic
                 let displayTitle = item.displayTitle
                 let itemId = item.id
                 let blockHeight = item.bitcoinBlockHeight
@@ -212,6 +212,7 @@ final class WitnessManager {
                     itemId: itemId,
                     blockHeight: blockHeight
                 )
+                HapticManager.shared.timestampConfirmed()
             }
         } catch {
             // Don't mark as failed - might just not be ready yet

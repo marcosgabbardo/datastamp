@@ -253,6 +253,7 @@ struct CreateTimestampView: View {
     
     private var createButtonView: some View {
         Button {
+            HapticManager.shared.buttonTap()
             Task {
                 await createTimestamp()
             }
@@ -339,6 +340,8 @@ struct CreateTimestampView: View {
                 )
             }
             
+            // Success haptic
+            HapticManager.shared.timestampCreated()
             dismiss()
         } catch {
             self.error = error
