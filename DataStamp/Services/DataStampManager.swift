@@ -251,25 +251,12 @@ final class DataStampManager {
         item.confirmedAt = Date()
         item.lastUpdated = Date()
         
-        // Try to extract block info
-        do {
-            let verificationResult = try await otsService.verifyTimestamp(
-                otsData: finalOts,
-                originalHash: item.contentHash
-            )
-            
-            if verificationResult.isValid {
-                item.bitcoinBlockHeight = verificationResult.blockHeight
-                item.bitcoinBlockTime = verificationResult.blockTime
-                item.bitcoinTxId = verificationResult.txId
-            }
-        } catch {
-            print("Could not extract block info: \(error)")
-        }
-        
-        // Save updated proof
+        // Save updated proof first
         try? await storageService.saveProof(finalOts, for: item.id)
         try? context.save()
+        
+        // Extract block info directly from OTS (faster and more reliable)
+        _ = await extractBlockInfo(for: item, context: context)
         
         // Send notification and haptic
         let displayTitle = item.displayTitle
@@ -393,6 +380,66 @@ final class DataStampManager {
             otsData: otsData,
             originalHash: item.contentHash
         )
+    }
+    
+    /// Extract block info directly from OTS data without full blockchain verification
+    /// This is faster and more reliable for just getting the block height
+    /// Only works for confirmed timestamps with Bitcoin attestation
+    func extractBlockInfo(for item: DataStampItem, context: ModelContext) async -> Bool {
+        // Only process confirmed timestamps that have final OTS data
+        guard item.status == .confirmed, let otsData = item.otsData else {
+            return false
+        }
+        
+        let merkleVerifier = MerkleVerifier()
+        
+        do {
+            // Parse OTS to get Bitcoin attestation
+            let proof = try await merkleVerifier.parseOtsFile(otsData)
+            
+            // Find Bitcoin attestation with block height
+            for attestation in proof.attestations {
+                if case .bitcoin(let blockHeight) = attestation {
+                    item.bitcoinBlockHeight = blockHeight
+                    
+                    // Fetch block time from blockchain API
+                    if let blockInfo = try? await fetchBlockTime(height: blockHeight) {
+                        item.bitcoinBlockTime = blockInfo.timestamp
+                        item.bitcoinTxId = blockInfo.hash
+                    }
+                    
+                    try? context.save()
+                    return true
+                }
+            }
+        } catch {
+            print("Failed to extract block info: \(error)")
+        }
+        
+        return false
+    }
+    
+    /// Fetch block timestamp from blockchain API
+    private func fetchBlockTime(height: Int) async throws -> (timestamp: Date, hash: String) {
+        let session = URLSession.shared
+        
+        // Get block hash
+        let hashUrl = URL(string: "https://blockstream.info/api/block-height/\(height)")!
+        let (hashData, _) = try await session.data(from: hashUrl)
+        guard let blockHash = String(data: hashData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            throw DataStampError.noProofData
+        }
+        
+        // Get block info
+        let blockUrl = URL(string: "https://blockstream.info/api/block/\(blockHash)")!
+        let (blockData, _) = try await session.data(from: blockUrl)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: blockData) as? [String: Any],
+              let timestamp = json["timestamp"] as? Int else {
+            throw DataStampError.noProofData
+        }
+        
+        return (Date(timeIntervalSince1970: TimeInterval(timestamp)), blockHash)
     }
     
     // MARK: - Delete

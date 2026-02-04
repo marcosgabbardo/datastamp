@@ -599,29 +599,33 @@ struct ItemDetailView: View {
         isFetchingBlockInfo = true
         defer { isFetchingBlockInfo = false }
         
-        // First try to upgrade the timestamp to get full proof
-        await manager.upgradeTimestamp(item, context: modelContext)
+        // Try to extract block info directly from OTS data (fast path)
+        let extracted = await manager.extractBlockInfo(for: item, context: modelContext)
         
-        // Then verify to get block info
-        do {
-            let result = try await manager.verifyTimestamp(item)
-            if result.isValid {
-                item.bitcoinBlockHeight = result.blockHeight
-                item.bitcoinBlockTime = result.blockTime
-                item.bitcoinTxId = result.txId
-                item.status = .confirmed
-                try? modelContext.save()
-                HapticManager.shared.success()
-            } else {
-                self.error = NSError(domain: "DataStamp", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verification returned invalid"])
-                showingError = true
-            }
-        } catch {
-            // Try one more approach - re-upgrade
-            print("Verify failed: \(error)")
-            self.error = error
-            showingError = true
+        if extracted {
+            HapticManager.shared.success()
+            return
         }
+        
+        // If direct extraction failed, try upgrading first (maybe OTS needs upgrade)
+        if item.status == .submitted {
+            await manager.upgradeTimestamp(item, context: modelContext)
+            
+            // Try extraction again after upgrade
+            let extractedAfterUpgrade = await manager.extractBlockInfo(for: item, context: modelContext)
+            if extractedAfterUpgrade {
+                HapticManager.shared.success()
+                return
+            }
+        }
+        
+        // If still no block info, show error
+        self.error = NSError(
+            domain: "DataStamp",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Could not extract block info. The timestamp may still be pending Bitcoin confirmation."]
+        )
+        showingError = true
     }
     
     private func formatBlockHeight(_ height: Int) -> String {

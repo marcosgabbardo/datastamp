@@ -1,10 +1,12 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
+import BackgroundTasks
 
 @main
 struct DataStampApp: App {
     @StateObject private var syncService = CloudKitSyncService()
+    @Environment(\.scenePhase) private var scenePhase
     
     let container: ModelContainer
     let storageService = StorageService()
@@ -24,6 +26,10 @@ struct DataStampApp: App {
                 for: schema,
                 configurations: [modelConfiguration]
             )
+            
+            // Configure background task manager
+            BackgroundTaskManager.shared.configure(with: container)
+            
         } catch {
             fatalError("Could not initialize ModelContainer: \(error)")
         }
@@ -41,9 +47,35 @@ struct DataStampApp: App {
                     if syncService.isAvailable {
                         await syncService.sync()
                     }
+                    
+                    // Clear badge when app opens (user has seen confirmations)
+                    BackgroundTaskManager.clearUnseenConfirmations()
+                    
+                    // Check pending timestamps when app opens
+                    await BackgroundTaskManager.shared.checkNow()
+                    
+                    // Schedule background refresh
+                    BackgroundTaskManager.shared.scheduleBackgroundRefresh()
                 }
         }
         .modelContainer(container)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            switch newPhase {
+            case .active:
+                // Clear unseen confirmations badge when user opens app
+                BackgroundTaskManager.clearUnseenConfirmations()
+                
+                // Check pending timestamps when app becomes active
+                Task {
+                    await BackgroundTaskManager.shared.checkNow()
+                }
+            case .background:
+                // Schedule background refresh when going to background
+                BackgroundTaskManager.shared.scheduleBackgroundRefresh()
+            default:
+                break
+            }
+        }
     }
     
     private func setupNotifications() async {

@@ -19,17 +19,18 @@
 		2CBD7252C4740391016D55B3 /* CloudKitSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EF5878E3E86CC4BAC7377B /* CloudKitSyncService.swift */; };
 		3B33F573DA0E6CE829C3D560 /* VerifyExternalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DD77686E039907A6D5C151 /* VerifyExternalView.swift */; };
 		3D72D278023885EC502A83BC /* WidgetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1F233ADC2DE0FC180E0B04 /* WidgetService.swift */; };
+		4EF98F1965004E0596FD3EDB /* BatchTimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51138E403E2F42BFA2597233 /* BatchTimestampView.swift */; };
 		520B04194B97614EA2C0C0AE /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ACC14023DD1BF635FEFABE /* HapticManager.swift */; };
 		67177A982CBFCAB87047EB3E /* MerkleTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41D4AF2B4E3C4A3141015EAA /* MerkleTreeView.swift */; };
+		866F265C871D4E69844DC291 /* QuickCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68616C7BA14F4417AE703B58 /* QuickCameraView.swift */; };
 		8D69782E2CB8788D99635838 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DF704E95A6D7ADA647DBC86C /* Localizable.strings */; };
 		915CA876203620063B43406D /* DataStampWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB05F2EB17AAF62B7C14E0B /* DataStampWidget.swift */; };
 		9EDD6E405BB71A84C099939F /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F681950B07B05F9269F804EF /* ShareViewController.swift */; };
 		A7E0334057FD4C7BD2732688 /* DataStampShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9229ACAF52648551239A2122 /* DataStampShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A9C5E3FA83B9E2ADC1960770 /* DataStampApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D46DD7D37CD474789B778C /* DataStampApp.swift */; };
 		B7F91BA3C66A2F9168F78B0A /* CreateTimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B3138AB49EA8EFEA4EAD25 /* CreateTimestampView.swift */; };
-		866F265C871D4E69844DC291 /* QuickCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68616C7BA14F4417AE703B58 /* QuickCameraView.swift */; };
-		4EF98F1965004E0596FD3EDB /* BatchTimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51138E403E2F42BFA2597233 /* BatchTimestampView.swift */; };
 		B8BCF0E8576FC01ACAF2E2CD /* OpenTimestampsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B75D531BB67F4524C89B1679 /* OpenTimestampsService.swift */; };
+		CE2C4C4E97DB4294248E2CF5 /* BackgroundTaskManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B94F3B981D9E144D71D195 /* BackgroundTaskManager.swift */; };
 		CEC9B7B55F4063E3A41AED62 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35F62BD59B7ACDDDEA5D31A /* StorageService.swift */; };
 		D3C51ED6E00F0A393A3D0B75 /* MerkleVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0402255BA4F935CECDB7F3 /* MerkleVerifier.swift */; };
 		DBB244B2E5FB129E38178C48 /* OpenTimestampsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3A95B552BEF99823531FDE8 /* OpenTimestampsServiceTests.swift */; };
@@ -83,8 +84,6 @@
 /* Begin PBXFileReference section */
 		03EF5878E3E86CC4BAC7377B /* CloudKitSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSyncService.swift; sourceTree = "<group>"; };
 		09B3138AB49EA8EFEA4EAD25 /* CreateTimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTimestampView.swift; sourceTree = "<group>"; };
-		68616C7BA14F4417AE703B58 /* QuickCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCameraView.swift; sourceTree = "<group>"; };
-		51138E403E2F42BFA2597233 /* BatchTimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTimestampView.swift; sourceTree = "<group>"; };
 		0D1F233ADC2DE0FC180E0B04 /* WidgetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetService.swift; sourceTree = "<group>"; };
 		11DD77686E039907A6D5C151 /* VerifyExternalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyExternalView.swift; sourceTree = "<group>"; };
 		208658C04C1D654FCD09E291 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -97,8 +96,10 @@
 		48FA5A574FFDB2708DBC8141 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		49ACC14023DD1BF635FEFABE /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		50B5D36AF86A625DABC9F130 /* FolderListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderListView.swift; sourceTree = "<group>"; };
+		51138E403E2F42BFA2597233 /* BatchTimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchTimestampView.swift; sourceTree = "<group>"; };
 		57FD014D205D093F5B5997C5 /* en.lproj */ = {isa = PBXFileReference; path = en.lproj; sourceTree = "<group>"; };
 		6081FFCEAFDC57707A4B5EAE /* DataStampManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampManager.swift; sourceTree = "<group>"; };
+		68616C7BA14F4417AE703B58 /* QuickCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCameraView.swift; sourceTree = "<group>"; };
 		693D3C50B0F3937C5B4D5C5E /* DataStampTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DataStampTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7263D72834A665610573650E /* AccessibilityModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityModifiers.swift; sourceTree = "<group>"; };
 		73974E70E7020DFC9C9720B1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -112,6 +113,7 @@
 		9822E1C3E0308D7B11450A8E /* DataStampWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DataStampWidget.entitlements; sourceTree = "<group>"; };
 		9AD30DFB094F44D7CDDDB1B2 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		A3A95B552BEF99823531FDE8 /* OpenTimestampsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTimestampsServiceTests.swift; sourceTree = "<group>"; };
+		B2B94F3B981D9E144D71D195 /* BackgroundTaskManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BackgroundTaskManager.swift; path = DataStamp/Services/BackgroundTaskManager.swift; sourceTree = SOURCE_ROOT; };
 		B75D531BB67F4524C89B1679 /* OpenTimestampsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenTimestampsService.swift; sourceTree = "<group>"; };
 		C149FF7D4DB901B06683D4EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C2D46DD7D37CD474789B778C /* DataStampApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStampApp.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				D0DDD73F1F1D2D18DCDB3EA5 /* PDFExportService.swift */,
 				F35F62BD59B7ACDDDEA5D31A /* StorageService.swift */,
 				0D1F233ADC2DE0FC180E0B04 /* WidgetService.swift */,
+				B2B94F3B981D9E144D71D195 /* BackgroundTaskManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 				020E25AAB57E18AE22264125 /* TagsEditorView.swift in Sources */,
 				3B33F573DA0E6CE829C3D560 /* VerifyExternalView.swift in Sources */,
 				3D72D278023885EC502A83BC /* WidgetService.swift in Sources */,
+				CE2C4C4E97DB4294248E2CF5 /* BackgroundTaskManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

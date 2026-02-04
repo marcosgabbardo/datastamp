@@ -96,31 +96,35 @@ actor MerkleVerifier {
         // Read attestation tag (8 bytes)
         let tag = try reader.readBytes(count: 8)
         
+        // Read payload length (varint) then payload bytes
+        let payloadLength = try reader.readVarInt()
+        let payloadBytes = try reader.readBytes(count: Int(payloadLength))
+        
         if Array(tag) == OTSConstants.attestationBitcoin {
-            // Bitcoin attestation - next 4 bytes are block height (little endian)
-            let heightBytes = try reader.readBytes(count: 4)
-            let height = Int(heightBytes[0]) |
-                         Int(heightBytes[1]) << 8 |
-                         Int(heightBytes[2]) << 16 |
-                         Int(heightBytes[3]) << 24
-            return .bitcoin(blockHeight: height)
+            // Bitcoin attestation - payload is block height as varint
+            var payloadReader = OTSReader(data: Data(payloadBytes))
+            let height = try payloadReader.readVarInt()
+            // Validate block height is reasonable (Bitcoin exists since 2009, max ~1M blocks by 2030)
+            let blockHeight = Int(height)
+            if blockHeight > 0 && blockHeight < 2_000_000 {
+                return .bitcoin(blockHeight: blockHeight)
+            } else {
+                // Invalid block height, treat as unknown
+                return .unknown(tag: Data(tag))
+            }
         } else if Array(tag) == OTSConstants.attestationPending {
-            // Pending attestation - followed by URL
-            let urlLength = try reader.readVarInt()
-            let urlBytes = try reader.readBytes(count: Int(urlLength))
-            var url = String(bytes: urlBytes, encoding: .utf8) ?? ""
+            // Pending attestation - payload is URL string
+            var url = String(bytes: payloadBytes, encoding: .utf8) ?? ""
             // Clean URL - remove any leading non-URL characters
             while !url.isEmpty && !url.hasPrefix("http") {
                 url.removeFirst()
             }
             return .pending(calendarUrl: url)
         } else if Array(tag) == OTSConstants.attestationLitecoin {
-            let heightBytes = try reader.readBytes(count: 4)
-            let height = Int(heightBytes[0]) |
-                         Int(heightBytes[1]) << 8 |
-                         Int(heightBytes[2]) << 16 |
-                         Int(heightBytes[3]) << 24
-            return .litecoin(blockHeight: height)
+            // Litecoin attestation - payload is block height as varint
+            var payloadReader = OTSReader(data: Data(payloadBytes))
+            let height = try payloadReader.readVarInt()
+            return .litecoin(blockHeight: Int(height))
         } else {
             return .unknown(tag: Data(tag))
         }
