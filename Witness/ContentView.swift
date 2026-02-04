@@ -42,7 +42,22 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Witness")
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        Text("Witness")
+                            .font(.headline)
+                        
+                        if witnessManager.isSyncing {
+                            SyncProgressView(
+                                progress: witnessManager.syncProgress,
+                                total: witnessManager.syncTotal
+                            )
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showingSettings = true
@@ -294,8 +309,56 @@ struct ItemRowCell: View {
     }
 }
 
+// MARK: - Sync Progress View
+
+struct SyncProgressView: View {
+    let progress: Int
+    let total: Int
+    
+    private var percentage: Double {
+        guard total > 0 else { return 0 }
+        return Double(progress) / Double(total)
+    }
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            // Circular progress indicator
+            ZStack {
+                Circle()
+                    .stroke(Color.secondary.opacity(0.3), lineWidth: 2)
+                    .frame(width: 16, height: 16)
+                
+                Circle()
+                    .trim(from: 0, to: percentage)
+                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .frame(width: 16, height: 16)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeInOut(duration: 0.3), value: percentage)
+            }
+            
+            Text("\(progress)/\(total)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.secondary.opacity(0.1))
+        .clipShape(Capsule())
+    }
+}
+
 #Preview {
     ContentView()
         .environmentObject(CloudKitSyncService())
         .modelContainer(for: WitnessItem.self, inMemory: true)
+}
+
+#Preview("Sync Progress") {
+    VStack(spacing: 20) {
+        SyncProgressView(progress: 1, total: 5)
+        SyncProgressView(progress: 3, total: 5)
+        SyncProgressView(progress: 5, total: 5)
+    }
+    .padding()
 }

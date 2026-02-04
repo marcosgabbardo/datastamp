@@ -17,6 +17,12 @@ final class WitnessManager {
     var processingMessage: String?
     var error: Error?
     
+    // MARK: - Sync State
+    var isSyncing = false
+    var syncProgress: Int = 0
+    var syncTotal: Int = 0
+    var syncMessage: String?
+    
     // MARK: - Create Timestamps
     
     /// Create a timestamp for text content
@@ -281,7 +287,24 @@ final class WitnessManager {
     func checkPendingUpgrades(items: [WitnessItem], context: ModelContext) async {
         let pendingItems = items.filter { $0.status == .submitted }
         
-        for item in pendingItems {
+        guard !pendingItems.isEmpty else { return }
+        
+        // Start sync
+        isSyncing = true
+        syncProgress = 0
+        syncTotal = pendingItems.count
+        syncMessage = "Checking \(pendingItems.count) pending..."
+        
+        defer {
+            isSyncing = false
+            syncProgress = 0
+            syncTotal = 0
+            syncMessage = nil
+        }
+        
+        for (index, item) in pendingItems.enumerated() {
+            syncProgress = index + 1
+            syncMessage = "Checking \(index + 1)/\(pendingItems.count)..."
             await upgradeTimestamp(item, context: context)
         }
     }
