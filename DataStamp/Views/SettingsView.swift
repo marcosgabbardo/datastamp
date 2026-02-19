@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -157,11 +158,22 @@ struct SettingsView: View {
     }
     
     private func deleteAllData() {
-        do {
-            try modelContext.delete(model: DataStampItem.self)
-            try modelContext.save()
-        } catch {
-            print("Failed to delete data: \(error)")
+        Task {
+            // Bug #11: Delete files from disk before removing SwiftData records
+            let storageService = StorageService()
+            let descriptor = FetchDescriptor<DataStampItem>()
+            if let items = try? modelContext.fetch(descriptor) {
+                for item in items {
+                    await storageService.deleteFiles(for: item.id, contentFilename: item.contentFileName)
+                }
+            }
+            
+            do {
+                try modelContext.delete(model: DataStampItem.self)
+                try modelContext.save()
+            } catch {
+                print("Failed to delete data: \(error)")
+            }
         }
     }
 }

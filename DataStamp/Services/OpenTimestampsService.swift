@@ -107,10 +107,15 @@ actor OpenTimestampsService {
     }
     
     /// Submit to all calendars in parallel, return all successful submissions
+    /// Bug #21: limit concurrency to 3 (one per calendar) with small stagger
     func submitToAllCalendars(hash: Data) async -> [(otsData: Data, calendarUrl: String)] {
         await withTaskGroup(of: (otsData: Data, calendarUrl: String)?.self) { group in
-            for calendar in OTSCalendar.allCases {
+            for (index, calendar) in OTSCalendar.allCases.enumerated() {
                 group.addTask {
+                    // Stagger requests slightly to avoid burst
+                    if index > 0 {
+                        try? await Task.sleep(for: .milliseconds(200 * index))
+                    }
                     do {
                         let otsData = try await self.submitToCalendar(hash: hash, calendar: calendar)
                         return (otsData, calendar.rawValue)

@@ -366,8 +366,8 @@ struct BatchTimestampView: View {
         var newImages: [LoadedImage] = []
         
         for item in items {
-            // Skip if already loaded
-            if loadedImages.contains(where: { $0.photoItem == item }) {
+            // Skip if already loaded (Bug #12: use itemIdentifier for stable identity)
+            if loadedImages.contains(where: { $0.photoItem.itemIdentifier == item.itemIdentifier }) {
                 continue
             }
             
@@ -382,9 +382,9 @@ struct BatchTimestampView: View {
             }
         }
         
-        // Keep existing + add new
+        // Keep existing + add new (Bug #12: use itemIdentifier)
         let existingItems = loadedImages.filter { existing in
-            items.contains { $0 == existing.photoItem }
+            items.contains { $0.itemIdentifier == existing.photoItem.itemIdentifier }
         }
         loadedImages = existingItems + newImages
     }

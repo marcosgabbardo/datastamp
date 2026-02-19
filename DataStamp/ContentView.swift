@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -143,8 +144,22 @@ struct ContentView: View {
                     showingOnboarding = true
                 }
             }
+            .onChange(of: hasSeenOnboarding) { _, seen in
+                if seen {
+                    // Request notifications after onboarding is dismissed (Bug #1 + #14)
+                    Task {
+                        await requestNotificationPermission()
+                    }
+                }
+            }
             .searchable(text: $searchText, prompt: "Search timestamps...")
             .task {
+                // Request notifications if already onboarded
+                if hasSeenOnboarding {
+                    await requestNotificationPermission()
+                }
+                // Small delay to let SwiftData query populate (Bug #4)
+                try? await Task.sleep(for: .milliseconds(500))
                 // Check for upgrades on launch - safely
                 await datestampManager.checkPendingUpgrades(items: items, context: modelContext)
             }
@@ -387,6 +402,18 @@ struct ContentView: View {
     }
     
     // MARK: - Actions
+    
+    private func requestNotificationPermission() async {
+        do {
+            let center = UNUserNotificationCenter.current()
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            if granted {
+                NotificationService.shared.registerCategories()
+            }
+        } catch {
+            print("Notification auth error: \(error)")
+        }
+    }
     
     private func deleteItems(offsets: IndexSet) {
         Task {

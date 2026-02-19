@@ -6,6 +6,36 @@ import CoreImage.CIFilterBuiltins
 /// Service for generating PDF certificates of timestamps
 actor PDFExportService {
     
+    // MARK: - Layout Constants (Bug #15)
+    
+    private enum Layout {
+        static let pageMargin: CGFloat = 45
+        static let borderInset: CGFloat = 35  // margin - 10
+        static let sealSize: CGFloat = 70
+        static let qrCodeSize: CGFloat = 80
+        static let hashBoxHeight: CGFloat = 36
+        static let badgeHeight: CGFloat = 26
+        static let badgeWidth: CGFloat = 200
+        static let cornerAccentLength: CGFloat = 20
+        
+        enum Font {
+            static let brand: CGFloat = 11
+            static let powered: CGFloat = 8
+            static let title: CGFloat = 28
+            static let subtitle: CGFloat = 12
+            static let section: CGFloat = 9
+            static let info: CGFloat = 9
+            static let hash: CGFloat = 9
+            static let certificate: CGFloat = 9
+            static let status: CGFloat = 10
+            static let verify: CGFloat = 10
+            static let instruction: CGFloat = 8
+            static let url: CGFloat = 7
+            static let legal: CGFloat = 7
+            static let footer: CGFloat = 9
+        }
+    }
+    
     // MARK: - Brand Colors
     
     private let bitcoinOrange = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0)
@@ -529,17 +559,26 @@ actor PDFExportService {
         return UIImage(cgImage: cgImage)
     }
     
+    // Cached formatters (Bug #8)
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM yyyy, HH:mm:ss"
+        return f
+    }()
+    
+    private static let numberFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.groupingSeparator = ","
+        return f
+    }()
+    
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM yyyy, HH:mm:ss"
-        return formatter.string(from: date)
+        Self.dateFormatter.string(from: date)
     }
     
     private func formatNumber(_ number: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = ","
-        return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
+        Self.numberFormatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
     
     private func contentTypeString(_ type: ContentType) -> String {
@@ -550,10 +589,19 @@ actor PDFExportService {
         }
     }
     
+    private static let calendarNameMap: [String: String] = [
+        "alice": "Alice",
+        "bob": "Bob",
+        "finney": "Finney"
+    ]
+    
     private func extractCalendarName(_ url: String) -> String {
-        if url.contains("alice") { return "Alice" }
-        if url.contains("bob") { return "Bob" }
-        if url.contains("finney") { return "Finney" }
+        if let urlObj = URL(string: url), let host = urlObj.host {
+            for (key, name) in Self.calendarNameMap {
+                if host.contains(key) { return name }
+            }
+            return host
+        }
         return "OpenTimestamps"
     }
 }

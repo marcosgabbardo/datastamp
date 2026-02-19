@@ -292,10 +292,9 @@ actor MerkleVerifier {
             return true
         }
         
-        // If we got here with a Bitcoin attestation and valid operations,
-        // the timestamp is likely valid but we couldn't fully verify the path
-        // This is acceptable for MVP - full verification requires more complex merkle tree traversal
-        return true
+        // Could not find the computed hash in the block's transactions or merkle root
+        // This means the proof chain does not lead to a valid on-chain commitment
+        return false
     }
 }
 

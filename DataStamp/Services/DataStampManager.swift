@@ -535,7 +535,7 @@ final class DataStampManager {
             try await storageService.saveProof(otsData, for: itemId)
         }
         
-        let proofUrl = await storageService.proofFileURL(for: itemId)
+        let proofUrl = try await storageService.proofFileURL(for: itemId)
         
         guard FileManager.default.fileExists(atPath: proofUrl.path) else {
             throw DataStampError.noProofData

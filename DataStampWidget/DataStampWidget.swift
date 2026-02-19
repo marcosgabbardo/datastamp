@@ -91,6 +91,8 @@ struct DataStampTimelineProvider: TimelineProvider {
 }
 
 // MARK: - Widget Data (from main app)
+// ⚠️ SHARED TYPE: Must stay in sync with WidgetService.swift in main app target.
+// These are duplicated because app and widget are separate targets without a shared framework.
 
 struct WidgetData: Codable {
     let pendingCount: Int

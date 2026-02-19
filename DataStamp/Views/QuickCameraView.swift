@@ -243,6 +243,48 @@ class CameraViewController: UIViewController {
     }
     
     private func setupCamera() {
+        // Bug #10: Check camera authorization
+        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        switch authStatus {
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                if granted {
+                    DispatchQueue.main.async { self?.configureSession() }
+                } else {
+                    DispatchQueue.main.async { self?.showPermissionDenied() }
+                }
+            }
+            return
+        case .denied, .restricted:
+            showPermissionDenied()
+            return
+        case .authorized:
+            break
+        @unknown default:
+            break
+        }
+        
+        configureSession()
+    }
+    
+    private func showPermissionDenied() {
+        let label = UILabel()
+        label.text = "Camera access denied.\nGo to Settings > DataStamp to enable."
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 16)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32)
+        ])
+    }
+    
+    private func configureSession() {
         let session = AVCaptureSession()
         session.sessionPreset = .photo
         

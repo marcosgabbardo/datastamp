@@ -197,6 +197,12 @@ class ShareViewController: UIViewController {
         }
     }
     
+    private static let calendarEndpoints = [
+        "https://alice.btc.calendar.opentimestamps.org/digest",
+        "https://bob.btc.calendar.opentimestamps.org/digest",
+        "https://finney.calendar.eternitywall.com/digest"
+    ]
+    
     private func submitToOpenTimestamps() {
         guard let hash = contentHash else {
             showError("No hash generated")
@@ -204,29 +210,38 @@ class ShareViewController: UIViewController {
         }
         
         updateStatus("Submitting to OpenTimestamps...")
+        submitToCalendar(hash: hash, calendarIndex: 0)
+    }
+    
+    private func submitToCalendar(hash: Data, calendarIndex: Int) {
+        guard calendarIndex < Self.calendarEndpoints.count else {
+            showError("All calendar servers unavailable")
+            return
+        }
         
-        // Submit to OpenTimestamps calendar
-        let url = URL(string: "https://a.pool.opentimestamps.org/digest")!
+        let url = URL(string: Self.calendarEndpoints[calendarIndex])!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = hash
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 10
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
-                if let error = error {
-                    self?.showError("Failed to submit: \(error.localizedDescription)")
+                if error != nil {
+                    // Try next calendar
+                    self?.submitToCalendar(hash: hash, calendarIndex: calendarIndex + 1)
                     return
                 }
                 
                 guard let httpResponse = response as? HTTPURLResponse,
                       httpResponse.statusCode == 200,
                       let otsData = data else {
-                    self?.showError("Server error")
+                    // Try next calendar
+                    self?.submitToCalendar(hash: hash, calendarIndex: calendarIndex + 1)
                     return
                 }
                 
-                // Save to shared container for main app to pick up
                 self?.saveForMainApp(otsData: otsData)
             }
         }.resume()

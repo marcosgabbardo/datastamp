@@ -71,7 +71,8 @@ final class HapticManager {
     /// Timestamp created pattern
     func timestampCreated() {
         impact(.medium)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
             self.success()
         }
     }
@@ -79,7 +80,8 @@ final class HapticManager {
     /// Timestamp confirmed pattern (celebratory)
     func timestampConfirmed() {
         success()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
             self.impact(.heavy)
         }
     }

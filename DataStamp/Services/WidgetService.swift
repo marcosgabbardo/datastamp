@@ -51,6 +51,7 @@ final class WidgetService {
 }
 
 // MARK: - Shared Data Types
+// ⚠️ SHARED TYPE: Must stay in sync with DataStampWidget.swift in widget target.
 
 struct WidgetData: Codable {
     let pendingCount: Int

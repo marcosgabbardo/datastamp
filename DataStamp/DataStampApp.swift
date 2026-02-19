@@ -40,7 +40,8 @@ struct DataStampApp: App {
             ContentView()
                 .environmentObject(syncService)
                 .task {
-                    await setupNotifications()
+                    // Defer notification request until after onboarding (Bug #1 + #14)
+                    // setupNotifications() is now called from ContentView after onboarding
                     await syncService.configure(with: container.mainContext, storage: storageService)
                     
                     // Initial sync (only if available)

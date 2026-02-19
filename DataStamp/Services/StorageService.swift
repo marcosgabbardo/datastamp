@@ -8,42 +8,49 @@ actor StorageService {
     
     /// Base directory for all DataStamp content
     private var baseDirectory: URL {
-        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let datestampDir = documentsPath.appendingPathComponent("DataStampContent", isDirectory: true)
-        
-        // Create if doesn't exist
-        if !fileManager.fileExists(atPath: datestampDir.path) {
-            try? fileManager.createDirectory(at: datestampDir, withIntermediateDirectories: true)
+        get throws {
+            let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let datestampDir = documentsPath.appendingPathComponent("DataStampContent", isDirectory: true)
+            
+            if !fileManager.fileExists(atPath: datestampDir.path) {
+                try fileManager.createDirectory(at: datestampDir, withIntermediateDirectories: true)
+            }
+            
+            return datestampDir
         }
-        
-        return datestampDir
     }
     
     /// Directory for original content files
     private var contentDirectory: URL {
-        let dir = baseDirectory.appendingPathComponent("content", isDirectory: true)
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        get throws {
+            let dir = try baseDirectory.appendingPathComponent("content", isDirectory: true)
+            if !fileManager.fileExists(atPath: dir.path) {
+                try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+            }
+            return dir
         }
-        return dir
     }
     
     /// Directory for .ots proof files
     private var proofsDirectory: URL {
-        let dir = baseDirectory.appendingPathComponent("proofs", isDirectory: true)
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        get throws {
+            let dir = try baseDirectory.appendingPathComponent("proofs", isDirectory: true)
+            if !fileManager.fileExists(atPath: dir.path) {
+                try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+            }
+            return dir
         }
-        return dir
     }
     
     /// Directory for thumbnails
     private var thumbnailsDirectory: URL {
-        let dir = baseDirectory.appendingPathComponent("thumbnails", isDirectory: true)
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        get throws {
+            let dir = try baseDirectory.appendingPathComponent("thumbnails", isDirectory: true)
+            if !fileManager.fileExists(atPath: dir.path) {
+                try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+            }
+            return dir
         }
-        return dir
     }
     
     // MARK: - Content Storage
@@ -51,7 +58,7 @@ actor StorageService {
     /// Save image and return the filename
     func saveImage(_ image: UIImage, for itemId: UUID) async throws -> String {
         let filename = "\(itemId.uuidString).jpg"
-        let url = contentDirectory.appendingPathComponent(filename)
+        let url = try contentDirectory.appendingPathComponent(filename)
         
         guard let data = image.jpegData(compressionQuality: 0.9) else {
             throw StorageError.compressionFailed
@@ -69,7 +76,7 @@ actor StorageService {
     func saveFile(_ data: Data, originalName: String, for itemId: UUID) async throws -> String {
         let ext = (originalName as NSString).pathExtension
         let filename = "\(itemId.uuidString).\(ext.isEmpty ? "bin" : ext)"
-        let url = contentDirectory.appendingPathComponent(filename)
+        let url = try contentDirectory.appendingPathComponent(filename)
         
         try data.write(to: url)
         
@@ -79,7 +86,7 @@ actor StorageService {
     /// Save text content as .txt file and return the filename
     func saveText(_ text: String, for itemId: UUID) async throws -> String {
         let filename = "\(itemId.uuidString).txt"
-        let url = contentDirectory.appendingPathComponent(filename)
+        let url = try contentDirectory.appendingPathComponent(filename)
         
         // Use UTF-8 encoding for consistent hashing
         guard let data = text.data(using: .utf8) else {
@@ -93,20 +100,20 @@ actor StorageService {
     
     /// Load text file
     func loadText(filename: String) async -> String? {
-        let url = contentDirectory.appendingPathComponent(filename)
+        guard let url = try? contentDirectory.appendingPathComponent(filename) else { return nil }
         guard let data = try? Data(contentsOf: url) else { return nil }
         return String(data: data, encoding: .utf8)
     }
     
     /// Load content file
     func loadContent(filename: String) async throws -> Data {
-        let url = contentDirectory.appendingPathComponent(filename)
+        let url = try contentDirectory.appendingPathComponent(filename)
         return try Data(contentsOf: url)
     }
     
     /// Load image
     func loadImage(filename: String) async -> UIImage? {
-        let url = contentDirectory.appendingPathComponent(filename)
+        guard let url = try? contentDirectory.appendingPathComponent(filename) else { return nil }
         guard let data = try? Data(contentsOf: url) else { return nil }
         return UIImage(data: data)
     }
@@ -116,42 +123,52 @@ actor StorageService {
     /// Save .ots proof data
     func saveProof(_ data: Data, for itemId: UUID) async throws {
         let filename = "\(itemId.uuidString).ots"
-        let url = proofsDirectory.appendingPathComponent(filename)
+        let url = try proofsDirectory.appendingPathComponent(filename)
         try data.write(to: url)
     }
     
     /// Load .ots proof data
     func loadProof(for itemId: UUID) async -> Data? {
         let filename = "\(itemId.uuidString).ots"
-        let url = proofsDirectory.appendingPathComponent(filename)
+        guard let url = try? proofsDirectory.appendingPathComponent(filename) else { return nil }
         return try? Data(contentsOf: url)
     }
     
     /// Get file URL for .ots proof (for sharing)
-    func proofFileURL(for itemId: UUID) -> URL {
+    func proofFileURL(for itemId: UUID) throws -> URL {
         let filename = "\(itemId.uuidString).ots"
-        return proofsDirectory.appendingPathComponent(filename)
+        return try proofsDirectory.appendingPathComponent(filename)
     }
     
     /// Get file URL for content (for sharing)
-    func contentFileURL(filename: String) -> URL {
-        return contentDirectory.appendingPathComponent(filename)
+    func contentFileURL(filename: String) throws -> URL {
+        return try contentDirectory.appendingPathComponent(filename)
     }
     
     // MARK: - Thumbnails
     
     private func saveThumbnail(_ image: UIImage, for itemId: UUID) async {
-        let size = CGSize(width: 200, height: 200)
+        // Bug #20: Preserve aspect ratio with aspectFill + clip
+        let targetSize: CGFloat = 200
+        let imageSize = image.size
+        let scale = max(targetSize / imageSize.width, targetSize / imageSize.height)
+        let scaledSize = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+        let origin = CGPoint(
+            x: (targetSize - scaledSize.width) / 2,
+            y: (targetSize - scaledSize.height) / 2
+        )
+        
+        let size = CGSize(width: targetSize, height: targetSize)
         let renderer = UIGraphicsImageRenderer(size: size)
         
         let thumbnail = renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: size))
+            image.draw(in: CGRect(origin: origin, size: scaledSize))
         }
         
         guard let data = thumbnail.jpegData(compressionQuality: 0.7) else { return }
         
         let filename = "\(itemId.uuidString).thumb.jpg"
-        let url = thumbnailsDirectory.appendingPathComponent(filename)
+        guard let url = try? thumbnailsDirectory.appendingPathComponent(filename) else { return }
         
         try? data.write(to: url)
     }
@@ -159,7 +176,7 @@ actor StorageService {
     /// Load thumbnail
     func loadThumbnail(for itemId: UUID) async -> UIImage? {
         let filename = "\(itemId.uuidString).thumb.jpg"
-        let url = thumbnailsDirectory.appendingPathComponent(filename)
+        guard let url = try? thumbnailsDirectory.appendingPathComponent(filename) else { return nil }
         guard let data = try? Data(contentsOf: url) else { return nil }
         return UIImage(data: data)
     }
@@ -169,20 +186,22 @@ actor StorageService {
     /// Delete all files associated with an item
     func deleteFiles(for itemId: UUID, contentFilename: String?) async {
         // Delete content
-        if let filename = contentFilename {
-            let contentUrl = contentDirectory.appendingPathComponent(filename)
+        if let filename = contentFilename,
+           let contentUrl = try? contentDirectory.appendingPathComponent(filename) {
             try? fileManager.removeItem(at: contentUrl)
         }
         
         // Delete proof
         let proofFilename = "\(itemId.uuidString).ots"
-        let proofUrl = proofsDirectory.appendingPathComponent(proofFilename)
-        try? fileManager.removeItem(at: proofUrl)
+        if let proofUrl = try? proofsDirectory.appendingPathComponent(proofFilename) {
+            try? fileManager.removeItem(at: proofUrl)
+        }
         
         // Delete thumbnail
         let thumbFilename = "\(itemId.uuidString).thumb.jpg"
-        let thumbUrl = thumbnailsDirectory.appendingPathComponent(thumbFilename)
-        try? fileManager.removeItem(at: thumbUrl)
+        if let thumbUrl = try? thumbnailsDirectory.appendingPathComponent(thumbFilename) {
+            try? fileManager.removeItem(at: thumbUrl)
+        }
     }
     
     // MARK: - Export
@@ -200,7 +219,7 @@ actor StorageService {
         
         // Copy content file if exists
         if let filename = contentFileName {
-            let sourceUrl = contentFileURL(filename: filename)
+            let sourceUrl = try contentFileURL(filename: filename)
             if fileManager.fileExists(atPath: sourceUrl.path) {
                 // Use original filename for better UX when sharing
                 let destUrl = shareDir.appendingPathComponent(filename)
@@ -211,7 +230,7 @@ actor StorageService {
         
         // Copy proof file if exists
         if hasOtsData {
-            let sourceUrl = proofFileURL(for: itemId)
+            let sourceUrl = try proofFileURL(for: itemId)
             if fileManager.fileExists(atPath: sourceUrl.path) {
                 // Name the .ots file to match the content file
                 let otsFilename: String

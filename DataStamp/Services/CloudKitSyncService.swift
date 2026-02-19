@@ -241,7 +241,7 @@ final class CloudKitSyncService: ObservableObject {
         
         // Upload content file as CKAsset
         if let filename = item.contentFileName, let storage = storageService {
-            let fileURL = await storage.contentFileURL(filename: filename)
+            let fileURL = try await storage.contentFileURL(filename: filename)
             if FileManager.default.fileExists(atPath: fileURL.path) {
                 record["contentFile"] = CKAsset(fileURL: fileURL)
                 record["contentFileName"] = filename
@@ -288,12 +288,9 @@ final class CloudKitSyncService: ObservableObject {
     }
     
     private func processRemoteRecord(_ record: CKRecord, context: ModelContext) async throws {
-        guard let idString = record.recordID.recordName.components(separatedBy: "-").first,
-              let _ = UUID(uuidString: record.recordID.recordName) else {
+        guard let itemId = UUID(uuidString: record.recordID.recordName) else {
             return
         }
-        
-        let itemId = UUID(uuidString: record.recordID.recordName)!
         
         // Check if item exists locally
         let descriptor = FetchDescriptor<DataStampItem>(

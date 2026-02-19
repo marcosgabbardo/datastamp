@@ -486,13 +486,10 @@ struct VerifyExternalView: View {
                 let originalData = try Data(contentsOf: originalURL)
                 hashData = await otsService.sha256(data: originalData)
             } else {
-                // Extract hash from OTS file (first 32 bytes after header + version + hash type)
-                let headerSize = 31 + 1 + 1 // magic + version + hash type
-                if otsData.count > headerSize + 32 {
-                    hashData = otsData.subdata(in: (headerSize)..<(headerSize + 32))
-                } else {
-                    throw NSError(domain: "DataStamp", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid OTS file format"])
-                }
+                // Bug #22: Use proper OTS parser instead of hardcoded offsets
+                let merkleVerifier = MerkleVerifier()
+                let proof = try await merkleVerifier.parseOtsFile(otsData)
+                hashData = proof.originalHash
             }
             
             // First try to upgrade (in case it's pending but confirmable)
