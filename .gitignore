@@ -1,0 +1,4 @@
+# Docs internos — nunca commitar
+*.md
+!README.md
+!README*.md
